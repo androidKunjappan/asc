@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -56,9 +55,9 @@ class Model(nn.Module):
         if args.num_layers > 1:
             lstm_dropout = args.dropout
         self.lstm1 = DynamicLSTM(args.embed_dim, args.hidden_dim, num_layers=args.num_layers,
-                                 batch_first=True, bidirectional=True, dropout=lstm_dropout)
+                                 batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
         self.lstm2 = DynamicLSTM(args.embed_dim, args.hidden_dim, num_layers=args.num_layers,
-                                 batch_first=True, bidirectional=True, dropout=lstm_dropout)
+                                 batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
         self.lstm3 = DynamicLSTM(2 * args.hidden_dim, args.hidden_dim, num_layers=args.num_layers,
                                  batch_first=True, bidirectional=True, dropout=lstm_dropout)
 
@@ -80,20 +79,6 @@ class Model(nn.Module):
         aspects = self.word_embeddings(aspect_ids)
         v, (_, _) = self.lstm1(features, feature_lens)
         e, (_, _) = self.lstm2(aspects, aspect_lens)
-
-        # v = self.dropout(v.transpose(1, 2))
-        # e = self.dropout(e.transpose(1, 2))
-        # for i in range(2):
-        #     a = torch.bmm(e.transpose(1, 2), v)
-        #     a = F.softmax(a, 1)
-        #     aspect_mid = torch.bmm(e, a)
-        #     aspect_mid = torch.cat((aspect_mid, v), dim=1).transpose(1, 2)
-        #     aspect_mid = F.leaky_relu(self.linear1[i](aspect_mid).transpose(1, 2))
-        #     aspect_mid = self.dropout(aspect_mid)
-        #     t = torch.sigmoid(self.linear2[i](v.transpose(1, 2))).transpose(1, 2)
-        #     v = (1 - t) * aspect_mid + t * v
-        #     v = position_weight.unsqueeze(2) * v.transpose(1, 2)
-        #     v = v.transpose(1, 2)
 
         v = self.dropout(v)
         e = self.dropout(e)

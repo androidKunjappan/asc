@@ -1,16 +1,15 @@
 import argparse
 import time
-from cmath import inf
-
 import torch
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
+from sklearn.metrics import f1_score
 
 from data_load import load_data
 from model import Model
 
-
+start_time = time.time()
 criterion = nn.CrossEntropyLoss()
 mse_loss = nn.MSELoss()
 
@@ -22,7 +21,7 @@ def pass_data_iteratively(model, x, initial, batch_size=128):
     total_size = len(x)
     idx = np.arange(total_size)
     for i in range(0, total_size, batch_size):
-        idx_tmp = idx[i: i+batch_size]
+        idx_tmp = idx[i: i + batch_size]
 
         with torch.no_grad():
             output, alpha, target, a_mask, a_value = model([x[i] for i in idx_tmp], initial)
@@ -35,6 +34,7 @@ def pass_data_iteratively(model, x, initial, batch_size=128):
 
 def main_init(args, alphas_list, k, device):
     max_test_acc = 0
+    max_f1 = 0
     num_clasees = 3
     dataset, word_to_id, word_list, word_embeddings = load_data(args.dataset_name, alphas_list, True)
     args.embed_dim = len(word_embeddings[1])
@@ -45,7 +45,6 @@ def main_init(args, alphas_list, k, device):
     test_data = dataset['test']
     train_size = len(train_data)
 
-    # alpha_files[k] = 'alpha-' + str(k)
     model = Model(args, num_clasees, word_embeddings, device).to(device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=.9)
@@ -56,29 +55,36 @@ def main_init(args, alphas_list, k, device):
     for epoch in range(1, args.epochs + 1):
         train_init(epoch, model, optimizer, train_data, train_size, batch_size)
 
-        alphas_to_save, max_test_acc = test_init(epoch, model, scheduler, train_data, test_data, alphas_to_save,
-                                                 max_test_acc, k)
+        alphas_to_save, max_test_acc, max_f1 = test_init(epoch, model, scheduler, train_data, test_data, alphas_to_save,
+                                                         max_test_acc, max_f1, k)
         print('')
-    print('max test accuracy : ', max_test_acc)
+    print('max test accuracy : ', max_test_acc, 'f1 :', max_f1)
     print('=' * 100)
 
     alphas_list.append(alphas_to_save)
-    return alphas_list, max_test_acc
+    return alphas_list, max_test_acc, max_f1
 
 
-def test_init(epoch, model, scheduler, train_data, test_data, alphas_to_save, max_test_acc, k):
+def test_init(epoch, model, scheduler, train_data, test_data, alphas_to_save, max_test_acc, max_f1, k):
     model.eval()
     outputs_train, alphas_train, targets_train = pass_data_iteratively(model, train_data, batch_size=128,
                                                                        initial=True)
     pred_train = outputs_train.max(1, keepdim=True)[1]
     correct = pred_train.eq(targets_train.view_as(pred_train)).sum().cpu().item()
     train_acc = correct / float(len(targets_train))
+    pred_train_np, targets_train_np = pred_train.detach().cpu().numpy(), targets_train.detach().cpu().numpy()
+    train_f1 = f1_score(targets_train_np, pred_train_np, average='macro')
+
     outputs_test, alpha_test, targets_test = pass_data_iteratively(model, test_data, batch_size=128, initial=True)
     pred_test = outputs_test.max(1, keepdim=True)[1]
     correct = pred_test.eq(targets_test.view_as(pred_test)).sum().cpu().item()
     test_acc = correct / float(len(targets_test))
+    pred_test_np, targets_test_np = pred_test.detach().cpu().numpy(), targets_test.detach().cpu().numpy()
+    test_f1 = f1_score(targets_test_np, pred_test_np, average='macro')
+
     if test_acc > max_test_acc:
         max_test_acc = test_acc
+        max_f1 = test_f1
         pred_train = pred_train.view_as(targets_train)
         alphas_to_save = alphas_train.detach().cpu().numpy()
         for ind in range(len(pred_train)):
@@ -87,7 +93,9 @@ def test_init(epoch, model, scheduler, train_data, test_data, alphas_to_save, ma
     else:
         scheduler.step()
     print('initial', k, 'epoch :', epoch, 'accuracy train :', train_acc, 'test :', test_acc, flush=True)
-    return alphas_to_save, max_test_acc
+    print('initial', k, 'epoch :', epoch, 'f1 train :', train_f1, 'test :', test_f1,
+          'time :', int(time.time() - start_time), flush=True)
+    return alphas_to_save, max_test_acc, max_f1
 
 
 def train_init(epoch, model, optimizer, train_data, train_size, batch_size):
@@ -111,11 +119,9 @@ def train_init(epoch, model, optimizer, train_data, train_size, batch_size):
 
 def main_final(args, alphas_list, k, device):
     max_test_acc = 0
+    max_f1 = 0
     num_clasees = 3
     dataset, word_to_id, word_list, word_embeddings = load_data(args.dataset_name, alphas_list, False)
-    # args.embed_dim = len(word_embeddings[1])
-    # args.sent_len = len(dataset['train'][0]['word_ids'])
-    # args.target_len = len(dataset['train'][0]['target_ids'])
 
     train_data = dataset['train']
     test_data = dataset['test']
@@ -130,33 +136,43 @@ def main_final(args, alphas_list, k, device):
     for epoch in range(1, args.epochs + 1):
         train_final(epoch, args, model, optimizer, train_data, train_size, batch_size)
 
-        max_test_acc = test_final(epoch, model, scheduler, train_data, test_data, max_test_acc, k)
+        max_test_acc, max_f1 = test_final(epoch, model, scheduler, train_data, test_data, max_test_acc, max_f1, k)
 
         print('')
 
-    print('max test accuracy : ', max_test_acc)
+    print('max test accuracy : ', max_test_acc, 'f1 :', max_f1)
     print('=' * 100)
 
-    return alphas_list, max_test_acc
+    return alphas_list, max_test_acc, max_f1
 
 
-def test_final(epoch, model, scheduler, train_data, test_data, max_test_acc, k):
+def test_final(epoch, model, scheduler, train_data, test_data, max_test_acc, max_f1, k):
     model.eval()
     outputs_train, alphas_train, targets_train = pass_data_iteratively(model, train_data, batch_size=128,
                                                                        initial=True)
     pred_train = outputs_train.max(1, keepdim=True)[1]
     correct = pred_train.eq(targets_train.view_as(pred_train)).sum().cpu().item()
     train_acc = correct / float(len(targets_train))
+    pred_train_np, targets_train_np = pred_train.detach().cpu().numpy(), targets_train.detach().cpu().numpy()
+    train_f1 = f1_score(targets_train_np, pred_train_np, average='macro')
+
     outputs_test, alpha_test, targets_test = pass_data_iteratively(model, test_data, batch_size=128, initial=True)
     pred_test = outputs_test.max(1, keepdim=True)[1]
     correct = pred_test.eq(targets_test.view_as(pred_test)).sum().cpu().item()
     test_acc = correct / float(len(targets_test))
+    pred_test_np, targets_test_np = pred_test.detach().cpu().numpy(), targets_test.detach().cpu().numpy()
+    test_f1 = f1_score(targets_test_np, pred_test_np, average='macro')
+
     if test_acc > max_test_acc:
         max_test_acc = test_acc
+        max_f1 = test_f1
     else:
         scheduler.step()
     print('final', k, 'epoch :', epoch, 'accuracy train :', train_acc, 'test :', test_acc, flush=True)
-    return max_test_acc
+    print('final', k, 'epoch :', epoch, 'f1 train :', train_f1, 'test :',
+          test_f1, 'time :', int(time.time() - start_time), flush=True)
+
+    return max_test_acc, max_f1
 
 
 def train_final(epoch, args, model, optimizer, train_data, train_size, batch_size):
@@ -194,11 +210,9 @@ def main():
     parser.add_argument('--weight_decay', type=float, default=0.0001, help='weight decay (default: 0.3)')
     parser.add_argument('--early_stop', type=int, default=5, help='early stop')
     parser.add_argument('--beta', type=float, default=.1, help='beta')
+    parser.add_argument("--rnn_type", type=str, default="LSTM", help="lstm or gru")
 
     args = parser.parse_args()
-
-    # if args.dataset_name == '14semeval_rest' or args.ds_name == '14semeval_rest_val':
-    #     args.beta = 0.5
 
     print(args, flush=True)
 
@@ -213,21 +227,26 @@ def main():
     max_k = 5
     alphas_list = []
     init_accuracies = []
+    init_f1 = []
     for k in range(max_k):
-        alphas_list, max_test_acc = main_init(args, alphas_list, k, device)
+        alphas_list, max_test_acc, max_f1 = main_init(args, alphas_list, k, device)
         init_accuracies.append(max_test_acc)
+        init_f1.append(max_f1)
 
     alphas_list_new = []
     final_accuracies = []
+    final_f1 = []
     for k in range(max_k):
         alphas_list_new.append(alphas_list[k])
-        alphas_list_new, max_test_acc = main_final(args, alphas_list_new, k, device)
+        alphas_list_new, max_test_acc, max_f1 = main_final(args, alphas_list_new, k, device)
         final_accuracies.append(max_test_acc)
+        final_f1.append(max_f1)
 
     print('=' * 150)
     print(args)
     for i in range(max_k):
-        print('k :', i, '\taccuracy int :', init_accuracies[i], '\taccuracy final :', final_accuracies[i])
+        print('k :', i, '\taccuracy int :', init_accuracies[i], '\tf1 init :', init_f1[i],
+              '\taccuracy final :', final_accuracies[i], '\tf1 final :', final_f1[i])
 
     print('=' * 150)
 
