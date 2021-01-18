@@ -151,7 +151,7 @@ def main():
         print('', flush=True)
     print('#' * 50)
     print(f"best test acc: {best_test_acc:.4f}, best test f1: {best_test_f1:.4f}")
-
+num_epoch
 
 if __name__ == '__main__':
     main()
