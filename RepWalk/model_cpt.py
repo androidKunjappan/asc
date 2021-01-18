@@ -98,7 +98,7 @@ class RepWalk(nn.Module):
         aspect_feature = self.word_embedding(aspect_ids)
         aspect_lens = torch.sum(aspect_ids != 0, dim=-1)
 
-        node_feature, _ = self.rnn(torch.cat((word_feature, pos_feature), dim=-1), text_len)
+        node_feature, _ = self.rnn(torch.cat((word_feature, pos_feature), dim=-1), text_len.cpu())
         BS, SL, FD = node_feature.shape
 
         masks = text != 0
@@ -169,7 +169,7 @@ class CPT(nn.Module):
             self.linear2.append(nn.Linear(2 * args.hidden_dim, 1))
 
     def forward(self, v, aspects, aspect_lens, masks, target_masks, position_weight):
-        e, (_, _) = self.lstm2(aspects, aspect_lens)
+        e, (_, _) = self.lstm2(aspects, aspect_lens.cpu())
 
         v = self.dropout(v)
         e = self.dropout(e)
