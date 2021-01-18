@@ -104,7 +104,7 @@ class RepWalk(nn.Module):
 
         masks = text != 0
         target_masks = aspect_ids != 0
-        v = self.cpt(node_feature, aspect_feature, aspect_lens, masks, target_masks, position_weight)
+        v = self.cpt(word_feature, text_len, aspect_feature, aspect_lens, masks, target_masks, position_weight)
         t = torch.sigmoid(self.linear(v))
         node_feature = (1 - t) * node_feature + t * v
 
@@ -162,6 +162,8 @@ class CPT(nn.Module):
         # self.lstm1 = WordEmbedLayer(args.embed_dim, args.hidden_dim, num_layers=args.num_layers,
         #                            batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
         lstm_dropout = 0
+        self.lstm1 = WordEmbedLayer(embed_dim, args.hidden_dim, num_layers=1,
+                                    batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
         self.lstm2 = WordEmbedLayer(embed_dim, args.hidden_dim, num_layers=1,
                                     batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
         self.dropout = nn.Dropout(.3)
@@ -171,7 +173,8 @@ class CPT(nn.Module):
             self.linear1.append(nn.Linear(4 * args.hidden_dim, 2 * args.hidden_dim))
             self.linear2.append(nn.Linear(2 * args.hidden_dim, 1))
 
-    def forward(self, v, aspects, aspect_lens, masks, target_masks, position_weight):
+    def forward(self, word_feature, text_len, aspects, aspect_lens, masks, target_masks, position_weight):
+        v, (_, _) = self.lstm1(word_feature, text_len.cpu())
         e, (_, _) = self.lstm2(aspects, aspect_lens.cpu())
 
         v = self.dropout(v)

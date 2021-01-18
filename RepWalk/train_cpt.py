@@ -50,6 +50,7 @@ def retrieve_args():
     parser.add_argument('--compress', default='F', type=str, help='T, F')
 
     parser.add_argument("--rnn_type", type=str, default="LSTM", help="lstm or gru")
+    parser.add_argument('--early_stop', type=int, default=5, help='early stop')
 
     args = parser.parse_args()
     args.dataset_file = dataset_files[args.dataset]
@@ -135,6 +136,7 @@ def main():
     
     weight_init(model)
     best_test_acc, best_test_f1 = 0, 0
+    best_epoch = 0
     if args.compress == 'T':
         compress = True
         print("Starting to train compressed model")
@@ -147,6 +149,7 @@ def main():
         if test_acc > best_test_acc:
             best_test_acc = test_acc
             best_test_f1 = test_f1
+            best_epoch = epoch
         print(f"{100*(epoch+1)/args.num_epoch:6.2f}% > loss: {train_loss:.4f}, acc: {train_acc:.4f}, test acc: {test_acc:.4f}, test f1: {test_f1:.4f}")
         print('', flush=True)
     print('#' * 50)
