@@ -148,6 +148,7 @@ def main():
             best_test_acc = test_acc
             best_test_f1 = test_f1
         print(f"{100*(epoch+1)/args.num_epoch:6.2f}% > loss: {train_loss:.4f}, acc: {train_acc:.4f}, test acc: {test_acc:.4f}, test f1: {test_f1:.4f}")
+        print('', flush=True)
     print('#' * 50)
     print(f"best test acc: {best_test_acc:.4f}, best test f1: {best_test_f1:.4f}")
 
