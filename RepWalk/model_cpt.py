@@ -80,6 +80,7 @@ class RepWalk(nn.Module):
         self.rnn = WordEmbedLayer(args.word_dim + args.pos_dim, args.hidden_dim, num_layers=1, batch_first=True,
                                   bidirectional=True, rnn_type='GRU')  # bi-gru layer
         self.cpt = CPT(args, args.word_dim)
+        self.linear = nn.Linear(2 * args.hidden_dim, 1)
 
         self.bilinear = nn.Bilinear(args.hidden_dim * 4, args.dep_dim, 1)
         self.fc_out = nn.Linear(args.hidden_dim * 2, 3)
@@ -103,7 +104,9 @@ class RepWalk(nn.Module):
 
         masks = text != 0
         target_masks = aspect_ids != 0
-        node_feature = self.cpt(node_feature, aspect_feature, aspect_lens, masks, target_masks, position_weight)
+        v = self.cpt(node_feature, aspect_feature, aspect_lens, masks, target_masks, position_weight)
+        t = torch.sigmoid(self.linear(v))
+        node_feature = (1 - t) * node_feature + t * v
 
         '''add a padding word.. somehow this improves performance'''
         padword_feature = self.pad_word.reshape(1, 1, -1).expand(BS, -1, -1)
