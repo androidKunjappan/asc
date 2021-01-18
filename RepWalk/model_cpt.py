@@ -178,8 +178,8 @@ class CPT(nn.Module):
         v = self.dropout(v)
         e = self.dropout(e)
 
-        target_masks = target_masks.long()
-        masks = masks.long()
+        target_masks = target_masks.long().float()
+        masks = masks.long().float()
 
         for i in range(2):
             a = torch.bmm(v, e.transpose(1, 2))
