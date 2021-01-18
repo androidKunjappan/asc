@@ -175,9 +175,6 @@ class CPT(nn.Module):
         e = self.dropout(e)
         position_weight = position_weight.float()
 
-        v = self.dropout(v)
-        e = self.dropout(e)
-
         target_masks = target_masks.long().float()
         masks = masks.long().float()
 
