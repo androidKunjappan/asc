@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-
+import sys
 
 class WordEmbedLayer(nn.Module):
     ''' LSTM which can hold variable length sequence, use like TensorFlow's RNN(input, length...). '''
@@ -125,12 +125,25 @@ class RepWalk(nn.Module):
         if compressed_version == True:
             path = path*(path<=SL)
         x = torch.gather(edge_score, 2, path)
+        #print("path")
+        #print(path[0])
         node_weight = torch.prod(x, dim=-1, keepdim=True)
         text_mask = (text!=0).unsqueeze(-1)
         node_weight = torch.where(text_mask!=0, node_weight, torch.zeros_like(node_weight))
+        word_count = torch.sum(text_mask.squeeze(-1), dim=-1)
+        word_count = word_count - 3
+        tril = torch.tril(torch.ones(SL,SL), diagonal=0)
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        spl_tag_mask = tril[word_count].unsqueeze(-1).to(device)
+        #print(node_weight[0])
+        node_weight = torch.where(spl_tag_mask!=0, node_weight, torch.zeros_like(node_weight))
+        #print(node_weight[0])
         aspect_mask = aspect_mask.unsqueeze(-1)
         node_weight = torch.where(aspect_mask==0, node_weight, torch.zeros_like(node_weight))
+        #print(node_weight[0])
+        #sys.exit(0)
         weight_norm = torch.sum(node_weight.squeeze(-1), dim=-1)
+        #print(weight_norm)
         ''' sentence representation '''
         sentence_feature = torch.sum(node_weight * node_feature, dim=1)
         predicts = self.fc_out(self.fc_dropout(sentence_feature))
