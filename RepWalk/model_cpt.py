@@ -102,8 +102,8 @@ class RepWalk(nn.Module):
         node_feature, _ = self.rnn(torch.cat((word_feature, pos_feature), dim=-1), text_len.cpu())
         BS, SL, FD = node_feature.shape
 
-        masks = text != 0
-        target_masks = aspect_ids != 0
+        masks = (text != 0).float()
+        target_masks = (aspect_ids != 0).float()
         v = self.cpt(word_feature, text_len, aspect_feature, aspect_lens, masks, target_masks, position_weight)
         t = torch.sigmoid(self.linear(v))
         node_feature = (1 - t) * node_feature + t * v
@@ -179,10 +179,6 @@ class CPT(nn.Module):
 
         v = self.dropout(v)
         e = self.dropout(e)
-        # position_weight = position_weight.float()
-
-        target_masks = target_masks.float()
-        masks = masks.float()
 
         for i in range(2):
             a = torch.bmm(v, e.transpose(1, 2))
