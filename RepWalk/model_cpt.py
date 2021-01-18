@@ -105,8 +105,6 @@ class RepWalk(nn.Module):
         masks = (text != 0).float()
         target_masks = (aspect_ids != 0).float()
         v = self.cpt(word_feature, text_len, aspect_feature, aspect_lens, masks, target_masks, position_weight)
-        t = torch.sigmoid(self.linear(v))
-        node_feature = (1 - t) * node_feature + t * v
 
         '''add a padding word.. somehow this improves performance'''
         padword_feature = self.pad_word.reshape(1, 1, -1).expand(BS, -1, -1)
@@ -151,6 +149,9 @@ class RepWalk(nn.Module):
         weight_norm = torch.sum(node_weight.squeeze(-1), dim=-1)
         ''' sentence representation '''
         sentence_feature = torch.sum(node_weight * node_feature, dim=1)
+
+        t = torch.sigmoid(self.linear(v))
+        sentence_feature = (1 - t) * sentence_feature + t * v
         predicts = self.fc_out(self.fc_dropout(sentence_feature))
         return [predicts, weight_norm]
 
@@ -192,4 +193,16 @@ class CPT(nn.Module):
             v = (1 - t) * aspect_mid + t * v
             v = position_weight.unsqueeze(2) * v
 
-        return v
+        target_masks = target_masks.eq(0).unsqueeze(2).repeat(1, 1, e.shape[2])
+        # z, (_, _) = self.lstm3(v, feature_lens)
+
+        query = torch.max(e.masked_fill(target_masks, -1e9), dim=1)[0].unsqueeze(1)
+        # hidden_fwd, hidden_bwd = e.chunk(2, 1)
+        # query = torch.cat((hidden_fwd[:, -1, :], hidden_bwd[:, 0, :]), dim=2).unsqueeze(1)
+
+        alpha = torch.bmm(v, query.transpose(1, 2))
+        alpha.masked_fill_(masks.eq(0).unsqueeze(2), -1e9)
+        alpha = F.softmax(alpha, 1)
+        z = torch.bmm(alpha.transpose(1, 2), v).squeeze(1)
+
+        return z
