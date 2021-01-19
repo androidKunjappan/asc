@@ -220,7 +220,7 @@ def build_tokenizer(fnames, dataset):
         tokenizer = pickle.load(open(data_file, 'rb'))
     else:
         print('building tokenizer...')
-        tokenizer = Tokenizer.from_files(fnames)
+        tokenizer = Tokenizer.from_files(fnames, lower=False)
         pickle.dump(tokenizer, open(data_file, 'wb'))
     return tokenizer
 
@@ -258,9 +258,5 @@ def build_embedding_matrix(vocab, dataset, word_dim=300, dir_path='..ss'):
                 embedding_matrix[i] = vec
                 n += 1
         print('got ', n, 'embeddings')
-        print(vocab.id_to_word(0))
-        print(vocab.id_to_word(5))
-        print(vocab.id_to_word(10))
-        print(vocab.id_to_word(20))
         pickle.dump(embedding_matrix, open(data_file, 'wb'))
     return embedding_matrix
