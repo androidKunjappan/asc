@@ -71,7 +71,7 @@ class RepWalk(nn.Module):
     def __init__(self, embedding_matrix, args):
         super(RepWalk, self).__init__()
         ''' embedding layer '''
-        self.word_embedding = nn.Embedding.from_pretrained(torch.tensor(embedding_matrix, dtype=torch.float))
+        # self.word_embedding = nn.Embedding.from_pretrained(torch.tensor(embedding_matrix, dtype=torch.float))
         # self.pos_embedding = nn.Embedding(len(args.tokenizer.vocab['pos']), args.pos_dim, padding_idx=0)
         # self.deprel_embedding = nn.Embedding(len(args.tokenizer.vocab['deprel']), args.dep_dim, padding_idx=0)
         # ''' other parameter '''
@@ -81,6 +81,9 @@ class RepWalk(nn.Module):
         # ''' main layer '''
         # self.rnn = WordEmbedLayer(args.word_dim + args.pos_dim, args.hidden_dim, num_layers=1, batch_first=True,
         #                           bidirectional=True, rnn_type='GRU')  # bi-gru layer
+        self.word_embedding = nn.Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1], padding_idx=0)
+        self.word_embedding.weight.data.copy_(torch.from_numpy(embedding_matrix).float())
+        self.word_embedding.weight.requires_grad = False
         self.cpt = CPT(args, args.word_dim)
         self.linear = nn.Linear(2 * args.hidden_dim, 1)
 

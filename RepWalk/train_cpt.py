@@ -117,8 +117,6 @@ def run_test(dataloader, model, criterion, device, compress):
             labels_all = torch.cat((labels_all, labels), dim=0) if labels_all is not None else labels
             predicts_all = torch.cat((predicts_all, outputs[0]), dim=0) if predicts_all is not None else outputs[0]
     f1 = metrics.f1_score(labels_all.cpu(), torch.argmax(predicts_all, -1).cpu(), labels=[0, 1, 2], average='macro') # compute f1 score
-    print(n_correct)
-    print(n_test)
     return test_loss / n_test, n_correct / n_test, f1
 
 
