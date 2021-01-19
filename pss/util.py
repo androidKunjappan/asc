@@ -2,7 +2,7 @@ import numpy as np
 
 
 def get_embedding(word_to_id):
-    filename = '../glove.840B.300d.txt'
+    filename = '../../glove.840B.300d.txt'
     dim = 300
 
     embeddings = np.random.uniform(-0.25, 0.25, (len(word_to_id), dim))
