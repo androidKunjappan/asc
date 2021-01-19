@@ -18,5 +18,5 @@ class CrossEntropy(nn.Module):
             true_dist = torch.zeros_like(predicts)
             true_dist.fill_(self.smoothing / (self.classes - 1))
             true_dist.scatter_(1, labels.data.unsqueeze(1), self.confidence)
-        return -torch.mean(torch.sum(true_dist * predicts, dim=-1)) + self.beta * torch.mean(torch.pow(weight_norm, 2))
+        return -torch.mean(torch.sum(true_dist * predicts, dim=-1)) #+ self.beta * torch.mean(torch.pow(weight_norm, 2))
     

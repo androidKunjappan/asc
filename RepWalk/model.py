@@ -135,16 +135,23 @@ class RepWalk(nn.Module):
         tril = torch.tril(torch.ones(SL,SL), diagonal=0)
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         spl_tag_mask = tril[word_count].unsqueeze(-1).to(device)
-        #print(node_weight[0])
         node_weight = torch.where(spl_tag_mask!=0, node_weight, torch.zeros_like(node_weight))
-        #print(node_weight[0])
         aspect_mask = aspect_mask.unsqueeze(-1)
         node_weight = torch.where(aspect_mask==0, node_weight, torch.zeros_like(node_weight))
-        #print(node_weight[0])
-        #sys.exit(0)
-        weight_norm = torch.sum(node_weight.squeeze(-1), dim=-1)
-        #print(weight_norm)
+
+        #softmax = torch.nn.Softmax(dim=1)
+        #node_weight = softmax(torch.where(node_weight!=0, node_weight, torch.ones_like(node_weight)*-100000000000))
+        #node_weight = torch.where(aspect_mask==0, node_weight, torch.zeros_like(node_weight))
+        #node_weight = node_weight.squeeze(-1)
+
+        node_weight = node_weight.squeeze(-1)
+        #print(node_weight.shape)
+        #print(torch.sum(node_weight, dim=1).expand(node_weight.shape[1], -1).T.shape)
+        node_weight = torch.div(node_weight, torch.sum(node_weight, dim=1).expand(node_weight.shape[1], -1).T)
+        #print(node_weight.shape)
+
+        weight_norm = torch.sum(node_weight, dim=-1)
         ''' sentence representation '''
-        sentence_feature = torch.sum(node_weight * node_feature, dim=1)
+        sentence_feature = torch.sum(node_weight.unsqueeze(-1) * node_feature, dim=1)
         predicts = self.fc_out(self.fc_dropout(sentence_feature))
         return [predicts, weight_norm]
