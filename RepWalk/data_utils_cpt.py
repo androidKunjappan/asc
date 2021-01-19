@@ -158,6 +158,7 @@ class MyDataset(Dataset):
                 ''' padding sequence '''
                 text = tokenizer.to_sequence(text_pi, 'word')
                 aspect_ids = tokenizer.to_sequence(text_aspect, 'word', maxlen='aspects')
+                print(text_aspect, aspect_ids)
 
                 max_t = 40.0
                 distance = []
