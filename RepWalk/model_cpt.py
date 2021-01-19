@@ -167,7 +167,8 @@ class RepWalk(nn.Module):
         # t = 1
         # sentence_feature = (1 - t) * sentence_feature + t * v
         weight_norm = None
-        predicts = self.fc_out(self.fc_dropout(v))
+        # predicts = self.fc_out(self.fc_dropout(v))
+        predicts = self.fc_out(v)
         return [predicts, weight_norm]
 
 
@@ -205,7 +206,6 @@ class CPT(nn.Module):
 
         v = self.dropout(v)
         e = self.dropout(e)
-
         for i in range(2):
             a = torch.bmm(v, e.transpose(1, 2))
             a = a.masked_fill(torch.bmm(masks.unsqueeze(2), target_masks.unsqueeze(1)).eq(0), -1e9)
@@ -228,6 +228,6 @@ class CPT(nn.Module):
         alpha = torch.bmm(v, query.transpose(1, 2))
         alpha = alpha.masked_fill(masks.eq(0).unsqueeze(2), -1e9)
         alpha = F.softmax(alpha, 1)
-        z = torch.bmm(alpha.transpose(1, 2), v).squeeze(1)
+        z = torch.bmm(alpha.transpose(1, 2), v)
 
-        return z
+        return z.squeeze(1)
