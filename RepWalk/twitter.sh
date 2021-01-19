@@ -6,6 +6,6 @@
 #SBATCH --gres=gpu:1
 #SBATCH --partition=cl1_48h-1G
 
-python3 train_cpt.py --hidden_dim 300 --dataset twitter --lr 2e-3 --wt_decay 1e-4
-python3 train_cpt.py --hidden_dim 300 --dataset twitter --lr 8e-4 --wt_decay 1e-4
-python3 train_cpt.py --hidden_dim 300 --dataset twitter --lr 3e-4 --wt_decay 1e-4
+python3 train_cpt.py --hidden_dim 50 --dataset twitter --lr 1e-3 --wt_decay 1e-4
+#python3 train_cpt.py --hidden_dim 300 --dataset twitter --lr 8e-4 --wt_decay 1e-4
+#python3 train_cpt.py --hidden_dim 300 --dataset twitter --lr 3e-4 --wt_decay 1e-4
