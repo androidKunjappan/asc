@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from RepWalk.rnn import DynamicLSTM
+
 
 class WordEmbedLayer(nn.Module):
     ''' LSTM which can hold variable length sequence, use like TensorFlow's RNN(input, length...). '''
@@ -179,10 +181,10 @@ class CPT(nn.Module):
         # self.lstm1 = WordEmbedLayer(args.embed_dim, args.hidden_dim, num_layers=args.num_layers,
         #                            batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
         lstm_dropout = 0
-        self.lstm1 = WordEmbedLayer(embed_dim, args.hidden_dim, num_layers=1,
-                                    batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
-        self.lstm2 = WordEmbedLayer(embed_dim, args.hidden_dim, num_layers=1,
-                                    batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
+        self.lstm1 = DynamicLSTM(embed_dim, args.hidden_dim, num_layers=1,
+                                 batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
+        self.lstm2 = DynamicLSTM(embed_dim, args.hidden_dim, num_layers=1,
+                                 batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
         self.dropout = nn.Dropout(.3)
         self.linear1 = nn.ModuleList()
         self.linear2 = nn.ModuleList()
