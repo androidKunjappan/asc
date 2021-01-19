@@ -134,7 +134,8 @@ def main():
 
     _params = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = torch.optim.Adam(_params, lr=args.lr, weight_decay=args.wt_decay)
-    criterion = CrossEntropy(beta=args.beta, eps=args.eps)
+    # criterion = CrossEntropy(beta=args.beta, eps=args.eps)
+    criterion = torch.nn.CrossEntropyLoss()
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
     
     train_dataloader = DataLoader(dataset=trainset, batch_size=args.batch_size, shuffle=True)
