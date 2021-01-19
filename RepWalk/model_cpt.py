@@ -146,12 +146,25 @@ class RepWalk(nn.Module):
         node_weight = torch.where(text_mask != 0, node_weight, torch.zeros_like(node_weight))
         aspect_mask = aspect_mask.unsqueeze(-1)
         node_weight = torch.where(aspect_mask == 0, node_weight, torch.zeros_like(node_weight))
-        weight_norm = torch.sum(node_weight.squeeze(-1), dim=-1)
+
+        # softmax = torch.nn.Softmax(dim=1)
+        # node_weight = softmax(torch.where(node_weight!=0, node_weight, torch.ones_like(node_weight)*-100000000000))
+        # node_weight = torch.where(aspect_mask==0, node_weight, torch.zeros_like(node_weight))
+        # node_weight = node_weight.squeeze(-1)
+
+        node_weight = node_weight.squeeze(-1)
+        # print(node_weight.shape)
+        # print(torch.sum(node_weight, dim=1).expand(node_weight.shape[1], -1).T.shape)
+        node_weight = torch.div(node_weight, torch.sum(node_weight, dim=1).expand(node_weight.shape[1], -1).T)
+        # print(node_weight.shape)
+
+        weight_norm = torch.sum(node_weight, dim=-1)
         ''' sentence representation '''
-        sentence_feature = torch.sum(node_weight * node_feature, dim=1)
+        sentence_feature = torch.sum(node_weight.unsqueeze(-1) * node_feature, dim=1)
 
         t = torch.sigmoid(self.linear(v))
         sentence_feature = (1 - t) * sentence_feature + t * v
+
         predicts = self.fc_out(self.fc_dropout(sentence_feature))
         return [predicts, weight_norm]
 
