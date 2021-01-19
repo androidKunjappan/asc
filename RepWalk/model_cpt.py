@@ -166,7 +166,7 @@ class RepWalk(nn.Module):
         t = 1
         sentence_feature = (1 - t) * sentence_feature + t * v
 
-        predicts = self.fc_out(self.fc_dropout(sentence_feature))
+        predicts = self.fc_out(self.fc_dropout(v))
         return [predicts, weight_norm]
 
 
