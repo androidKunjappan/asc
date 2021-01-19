@@ -102,7 +102,7 @@ class Model(nn.Module):
         # query = torch.cat((hidden_fwd[:, -1, :], hidden_bwd[:, 0, :]), dim=2).unsqueeze(1)
 
         alpha = torch.bmm(v, query.transpose(1, 2))
-        alpha.masked_fill_(masks.eq(0).unsqueeze(2), -1e9)
+        alpha = alpha.masked_fill(masks.eq(0).unsqueeze(2), -1e9)
         alpha = F.softmax(alpha, 1)
         z = torch.bmm(alpha.transpose(1, 2), v)
         z = self.classifier(z.squeeze(1))
