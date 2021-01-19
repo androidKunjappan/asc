@@ -188,10 +188,15 @@ class CPT(nn.Module):
             self.linear1.append(nn.Linear(4 * args.hidden_dim, 2 * args.hidden_dim))
             self.linear2.append(nn.Linear(2 * args.hidden_dim, 1))
 
+        self.onec = True
+
     def forward(self, word_feature, text_len, aspects, aspect_lens, masks, target_masks, position_weight):
         v, (_, _) = self.lstm1(word_feature, text_len.cpu())
         e, (_, _) = self.lstm2(aspects, aspect_lens.cpu())
 
+        if self.onec:
+            self.onec = False
+            print(position_weight)
         v = self.dropout(v)
         e = self.dropout(e)
 
