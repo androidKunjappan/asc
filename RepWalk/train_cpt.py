@@ -90,7 +90,7 @@ def run_train(dataloader, model, criterion, optimizer, device, compress):
         outputs = model(inputs, compress)
 
         optimizer.zero_grad()
-        loss = criterion(outputs[0], labels)
+        loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
 
@@ -109,7 +109,7 @@ def run_test(dataloader, model, criterion, device, compress):
             inputs = list(map(lambda x: x.to(device), sample_batched[0]))
             labels = sample_batched[1].to(device)
             outputs = model(inputs, compress)
-            loss = criterion(outputs[0], labels)
+            loss = criterion(outputs, labels)
             
             test_loss += loss.item() * len(labels)
             n_correct += (torch.argmax(outputs[0], -1) == labels).sum().item()
@@ -130,14 +130,13 @@ def main():
 
     _params = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = torch.optim.Adam(_params, lr=args.lr, weight_decay=args.wt_decay)
-    # criterion = CrossEntropy(beta=args.beta, eps=args.eps)
-    criterion = torch.nn.CrossEntropyLoss()
+    criterion = CrossEntropy(beta=args.beta, eps=args.eps)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
     
     train_dataloader = DataLoader(dataset=trainset, batch_size=args.batch_size, shuffle=True)
     test_dataloader = DataLoader(dataset=testset, batch_size=args.batch_size, shuffle=False)
     
-    weight_init(model)
+    # weight_init(model)
     best_test_acc, best_test_f1 = 0, 0
     best_epoch = 0
     if args.compress == 'T':
