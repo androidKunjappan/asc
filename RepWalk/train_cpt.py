@@ -156,8 +156,8 @@ def main():
             best_test_acc = test_acc
             best_test_f1 = test_f1
             best_epoch = epoch
-        else:
-            scheduler.step()
+        # else:
+        #     scheduler.step()
         print(f"{100*(epoch+1)/args.num_epoch:6.2f}% > loss: {train_loss:.4f}, acc: {train_acc:.4f}, test acc: {test_acc:.4f}, test f1: {test_f1:.4f}")
         print('', flush=True)
         if epoch > best_epoch + 10:

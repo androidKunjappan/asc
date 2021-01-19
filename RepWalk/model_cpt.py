@@ -194,11 +194,11 @@ class CPT(nn.Module):
         v, (_, _) = self.lstm1(word_feature, text_len.cpu())
         e, (_, _) = self.lstm2(aspects, aspect_lens.cpu())
 
-        if self.onec:
-            self.onec = False
-            print(position_weight[:, :])
-            print(text_len[:])
-            print(aspects[:])
+        # if self.onec:
+        #     self.onec = False
+        #     print(position_weight[:, :])
+        #     print(text_len[:])
+        #     print(aspects[:])
 
         v = self.dropout(v)
         e = self.dropout(e)
