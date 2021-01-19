@@ -76,6 +76,8 @@ class Tokenizer(object):
                                               aspect['path']]))  # path length should add 1 for extra relation
                 max_tlen = max(max_tlen, max([len(p) for aspect in data['aspects'] for p in
                                               aspect['term']]))
+                if max([len(p) for aspect in data['aspects'] for p in aspect['term']]) == 14:
+                    print(data['aspects'])
 
         all_tokens.update(['<p>', '</p>'])  # add position indicators
         all_pos.update(['<p>', '</p>'])  # add position indicators
