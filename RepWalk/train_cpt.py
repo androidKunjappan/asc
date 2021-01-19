@@ -133,6 +133,7 @@ def main():
     model = RepWalk(embedding_matrix, args).to(args.device)
 
     _params = filter(lambda p: p.requires_grad, model.parameters())
+    print(_params)
     optimizer = torch.optim.Adam(_params, lr=args.lr, weight_decay=args.wt_decay)
     # criterion = CrossEntropy(beta=args.beta, eps=args.eps)
     criterion = torch.nn.CrossEntropyLoss()
