@@ -72,38 +72,37 @@ class RepWalk(nn.Module):
         super(RepWalk, self).__init__()
         ''' embedding layer '''
         self.word_embedding = nn.Embedding.from_pretrained(torch.tensor(embedding_matrix, dtype=torch.float))
-        self.pos_embedding = nn.Embedding(len(args.tokenizer.vocab['pos']), args.pos_dim, padding_idx=0)
-        self.deprel_embedding = nn.Embedding(len(args.tokenizer.vocab['deprel']), args.dep_dim, padding_idx=0)
-        ''' other parameter '''
-        self.pad_word = nn.Parameter(torch.zeros(args.hidden_dim * 2), requires_grad=False)
-        self.pad_edge = nn.Parameter(torch.ones(1), requires_grad=False)
-        self.ext_rel = nn.Parameter(torch.Tensor(args.dep_dim), requires_grad=True)
-        ''' main layer '''
-        self.rnn = WordEmbedLayer(args.word_dim + args.pos_dim, args.hidden_dim, num_layers=1, batch_first=True,
-                                  bidirectional=True, rnn_type='GRU')  # bi-gru layer
+        # self.pos_embedding = nn.Embedding(len(args.tokenizer.vocab['pos']), args.pos_dim, padding_idx=0)
+        # self.deprel_embedding = nn.Embedding(len(args.tokenizer.vocab['deprel']), args.dep_dim, padding_idx=0)
+        # ''' other parameter '''
+        # self.pad_word = nn.Parameter(torch.zeros(args.hidden_dim * 2), requires_grad=False)
+        # self.pad_edge = nn.Parameter(torch.ones(1), requires_grad=False)
+        # self.ext_rel = nn.Parameter(torch.Tensor(args.dep_dim), requires_grad=True)
+        # ''' main layer '''
+        # self.rnn = WordEmbedLayer(args.word_dim + args.pos_dim, args.hidden_dim, num_layers=1, batch_first=True,
+        #                           bidirectional=True, rnn_type='GRU')  # bi-gru layer
         self.cpt = CPT(args, args.word_dim)
         self.linear = nn.Linear(2 * args.hidden_dim, 1)
 
-        self.bilinear = nn.Bilinear(args.hidden_dim * 4, args.dep_dim, 1)
+        # self.bilinear = nn.Bilinear(args.hidden_dim * 4, args.dep_dim, 1)
         self.fc_out = nn.Linear(args.hidden_dim * 2, 3)
         ''' dropout layer '''
-        self.embed_dropout = nn.Dropout(args.embed_dropout)
-        self.bilinear_dropout = nn.Dropout(args.bilinear_dropout)
-        self.fc_dropout = nn.Dropout(args.fc_dropout)
+        # self.embed_dropout = nn.Dropout(args.embed_dropout)
+        # self.bilinear_dropout = nn.Dropout(args.bilinear_dropout)
+        # self.fc_dropout = nn.Dropout(args.fc_dropout)
 
     def forward(self, inputs, compressed_version):
         text, pos, deprel, aspect_head, aspect_mask, gather_idx, path, words_ids, aspect_ids, position_weight = inputs
         '''Generate hidden representation for nodes as BiGRU(node_embeddings <+> pos-tag_embeddings)'''
-        word_feature = self.embed_dropout(self.word_embedding(text))
-        pos_feature = self.embed_dropout(self.pos_embedding(pos))
-        text_len = torch.sum(text != 0, dim=-1)
+        # word_feature = self.embed_dropout(self.word_embedding(text))
+        # pos_feature = self.embed_dropout(self.pos_embedding(pos))
+        # text_len = torch.sum(text != 0, dim=-1)
+        #
+        # node_feature, _ = self.rnn(torch.cat((word_feature, pos_feature), dim=-1), text_len.cpu())
+        # BS, SL, FD = node_feature.shape
 
         aspect_feature = self.word_embedding(aspect_ids)
         aspect_lens = torch.sum(aspect_ids != 0, dim=-1)
-
-        node_feature, _ = self.rnn(torch.cat((word_feature, pos_feature), dim=-1), text_len.cpu())
-        BS, SL, FD = node_feature.shape
-
         masks = (words_ids != 0).float()
         target_masks = (aspect_ids != 0).float()
         word_feature1 = self.word_embedding(words_ids)
@@ -178,8 +177,6 @@ class CPT(nn.Module):
 
     def __init__(self, args, embed_dim):
         super(CPT, self).__init__()
-        # self.lstm1 = WordEmbedLayer(args.embed_dim, args.hidden_dim, num_layers=args.num_layers,
-        #                            batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
         lstm_dropout = 0
         self.lstm1 = DynamicLSTM(embed_dim, args.hidden_dim, num_layers=1,
                                  batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
