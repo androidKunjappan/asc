@@ -152,8 +152,9 @@ class MyDataset(Dataset):
                 pos_left = data['pos'][0:start]
                 pos_aspect = data['pos'][start:end]
                 pos_right = data['pos'][end:]
-                # text_pi = text_left + ['<p>'] + text_aspect + ['</p>'] + text_right
-                text_pi = text_left + text_aspect + text_right + ['<p>'] + ['/<p>']
+                text_pi = text_left + ['<p>'] + text_aspect + ['</p>'] + text_right
+                # text_pi = text_left + text_aspect + text_right + ['<p>'] + ['/<p>']
+                print(text_pi)
                 pos_pi = pos_left + ['<p>'] + pos_aspect + ['</p>'] + pos_right
                 ''' padding sequence '''
                 text = tokenizer.to_sequence(text_pi, 'word')

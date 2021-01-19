@@ -45,7 +45,7 @@ def retrieve_args():
     parser.add_argument('--fc_dropout', default=0, type=float)
     parser.add_argument('--beta', default=0.01, type=float)
     parser.add_argument('--eps', default=0.01, type=float)
-    parser.add_argument('--seed', default=None, type=int)
+    parser.add_argument('--seed', default=0, type=int)
     parser.add_argument('--device', default=None, type=str, help='cpu, cuda')
     parser.add_argument('--compress', default='F', type=str, help='T, F')
 
@@ -161,7 +161,7 @@ def main():
         #     scheduler.step()
         print(f"{100*(epoch+1)/args.num_epoch:6.2f}% > loss: {train_loss:.4f}, acc: {train_acc:.4f}, test acc: {test_acc:.4f}, test f1: {test_f1:.4f}")
         print('', flush=True)
-        if epoch > best_epoch + 50:
+        if epoch > best_epoch + 10:
             break
 
     print('#' * 50)
