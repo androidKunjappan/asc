@@ -161,13 +161,13 @@ class MyDataset(Dataset):
 
                 max_t = 40.0
                 distance = []
-                for pos in range(len(text)):
+                for pos in range(len(text_pi)):
                     if pos < start:
                         distance.append(end - 1 - pos)
                     else:
                         distance.append(pos - start)
 
-                pad = tokenizer.max_slen - len(text)
+                pad = tokenizer.max_slen - len(text_pi)
                 distance = distance + pad * [-1]
                 position_weight = []
                 for d in distance:
