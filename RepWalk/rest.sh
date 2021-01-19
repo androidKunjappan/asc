@@ -4,6 +4,22 @@
 #SBATCH --time=23:50:00 # Time limit hrs:min:sec
 #SBATCH --output=test_job%j.out # Standard output and error log
 #SBATCH --gres=gpu:1
-#SBATCH --partition=cl1_48h-1G
+#SBATCH --partition=c2_48h-1G
 
-python3 train_cpt.py --hidden_dim 50 --wt_decay 1e-4
+python3 train_cpt.py --hidden_dim 50 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-2
+python3 train_cpt.py --hidden_dim 50 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-3
+python3 train_cpt.py --hidden_dim 50 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-4
+python3 train_cpt.py --hidden_dim 50 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-5
+python3 train_cpt.py --hidden_dim 50 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-6
+
+python3 train_cpt.py --hidden_dim 100 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-2
+python3 train_cpt.py --hidden_dim 100 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-3
+python3 train_cpt.py --hidden_dim 100 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-4
+python3 train_cpt.py --hidden_dim 100 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-5
+python3 train_cpt.py --hidden_dim 100 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-6
+
+python3 train_cpt.py --hidden_dim 300 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-2
+python3 train_cpt.py --hidden_dim 300 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-3
+python3 train_cpt.py --hidden_dim 300 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-4
+python3 train_cpt.py --hidden_dim 300 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-5
+python3 train_cpt.py --hidden_dim 300 --dataset restaurant --lr .001 --batch_size 25 --wt_decay 1e-6
