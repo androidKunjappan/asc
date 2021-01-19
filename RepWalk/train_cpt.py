@@ -109,7 +109,7 @@ def run_test(dataloader, model, criterion, device, compress):
             inputs = list(map(lambda x: x.to(device), sample_batched[0]))
             labels = sample_batched[1].to(device)
             outputs = model(inputs, compress)
-            loss = criterion(outputs, labels)
+            loss = criterion(outputs[0], labels)
             
             test_loss += loss.item() * len(labels)
             n_correct += (torch.argmax(outputs[0], -1) == labels).sum().item()
