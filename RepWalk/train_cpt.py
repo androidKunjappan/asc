@@ -88,9 +88,9 @@ def run_train(dataloader, model, criterion, optimizer, device, compress):
         inputs = list(map(lambda x: x.to(device), sample_batched[0]))
         labels = sample_batched[1].to(device)
         outputs = model(inputs, compress)
-
-        optimizer.zero_grad()
         loss = criterion(outputs[0], labels)
+        optimizer.zero_grad()
+
         loss.backward()
         optimizer.step()
 
