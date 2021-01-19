@@ -220,7 +220,7 @@ def build_tokenizer(fnames, dataset):
         tokenizer = pickle.load(open(data_file, 'rb'))
     else:
         print('building tokenizer...')
-        tokenizer = Tokenizer.from_files(fnames, lower=False)
+        tokenizer = Tokenizer.from_files(fnames)
         pickle.dump(tokenizer, open(data_file, 'wb'))
     return tokenizer
 
