@@ -108,64 +108,64 @@ class RepWalk(nn.Module):
         v = self.cpt(word_feature1, text_len, aspect_feature, aspect_lens, masks, target_masks, position_weight)
 
         '''add a padding word.. somehow this improves performance'''
-        padword_feature = self.pad_word.reshape(1, 1, -1).expand(BS, -1, -1)
-        padded_node_feature = torch.cat((padword_feature, node_feature), dim=1)
-
-        '''Gather right words from sentence(by removing embeds of some token words like <p>, based on gather_idx'''
-        gather_idx = gather_idx.unsqueeze(0).expand(FD, -1, -1).permute(1, 2, 0)
-        node_feature = torch.cat((padword_feature, node_feature), dim=1)
-        node_feature = torch.gather(padded_node_feature, 1, gather_idx)
-
-        '''Along with this node feature, concatenate features of head nodes and tail nodes'''
-        aspect_head = aspect_head.unsqueeze(0).expand(FD, -1, -1).permute(1, 2, 0)
-        deptext_feature = torch.gather(padded_node_feature, 1, aspect_head)
-        if compressed_version == False:
-            head_text_feature = torch.cat((deptext_feature, node_feature), dim=1)
-            exttext_feature = self.pad_word.reshape(1, 1, -1).expand(BS, SL, -1)
-            tail_text_feature = torch.cat((node_feature, exttext_feature), dim=1)
-            edge_feature = torch.cat((head_text_feature, tail_text_feature), dim=-1)
-        else:
-            edge_feature = torch.cat((deptext_feature, node_feature), dim=-1)
-
-        ''' score function by attention over the node features and edge features '''
-        if compressed_version == False:
-            deprel_feature = self.embed_dropout(self.deprel_embedding(deprel))
-            extrel_feature = self.embed_dropout(self.ext_rel).reshape(1, 1, -1).expand(BS, SL, -1)
-            label_feature = torch.cat((deprel_feature, extrel_feature), dim=1)
-        else:
-            label_feature = self.embed_dropout(self.deprel_embedding(deprel))
-        edge_score = torch.sigmoid(self.bilinear(self.bilinear_dropout(edge_feature), label_feature))
-        padedge_feature = self.pad_edge.reshape(1, 1, -1).expand(BS, -1, -1)
-        edge_score = torch.cat((padedge_feature, edge_score.transpose(1, 2)), dim=-1).expand(-1, SL, -1)
-
-        ''' node weight '''
-        if compressed_version == True:
-            path = path * (path <= SL)
-        x = torch.gather(edge_score, 2, path)
-        node_weight = torch.prod(x, dim=-1, keepdim=True)
-        text_mask = (text != 0).unsqueeze(-1)
-        node_weight = torch.where(text_mask != 0, node_weight, torch.zeros_like(node_weight))
-        aspect_mask = aspect_mask.unsqueeze(-1)
-        node_weight = torch.where(aspect_mask == 0, node_weight, torch.zeros_like(node_weight))
-
-        # softmax = torch.nn.Softmax(dim=1)
-        # node_weight = softmax(torch.where(node_weight!=0, node_weight, torch.ones_like(node_weight)*-100000000000))
-        # node_weight = torch.where(aspect_mask==0, node_weight, torch.zeros_like(node_weight))
+        # padword_feature = self.pad_word.reshape(1, 1, -1).expand(BS, -1, -1)
+        # padded_node_feature = torch.cat((padword_feature, node_feature), dim=1)
+        #
+        # '''Gather right words from sentence(by removing embeds of some token words like <p>, based on gather_idx'''
+        # gather_idx = gather_idx.unsqueeze(0).expand(FD, -1, -1).permute(1, 2, 0)
+        # node_feature = torch.cat((padword_feature, node_feature), dim=1)
+        # node_feature = torch.gather(padded_node_feature, 1, gather_idx)
+        #
+        # '''Along with this node feature, concatenate features of head nodes and tail nodes'''
+        # aspect_head = aspect_head.unsqueeze(0).expand(FD, -1, -1).permute(1, 2, 0)
+        # deptext_feature = torch.gather(padded_node_feature, 1, aspect_head)
+        # if compressed_version == False:
+        #     head_text_feature = torch.cat((deptext_feature, node_feature), dim=1)
+        #     exttext_feature = self.pad_word.reshape(1, 1, -1).expand(BS, SL, -1)
+        #     tail_text_feature = torch.cat((node_feature, exttext_feature), dim=1)
+        #     edge_feature = torch.cat((head_text_feature, tail_text_feature), dim=-1)
+        # else:
+        #     edge_feature = torch.cat((deptext_feature, node_feature), dim=-1)
+        #
+        # ''' score function by attention over the node features and edge features '''
+        # if compressed_version == False:
+        #     deprel_feature = self.embed_dropout(self.deprel_embedding(deprel))
+        #     extrel_feature = self.embed_dropout(self.ext_rel).reshape(1, 1, -1).expand(BS, SL, -1)
+        #     label_feature = torch.cat((deprel_feature, extrel_feature), dim=1)
+        # else:
+        #     label_feature = self.embed_dropout(self.deprel_embedding(deprel))
+        # edge_score = torch.sigmoid(self.bilinear(self.bilinear_dropout(edge_feature), label_feature))
+        # padedge_feature = self.pad_edge.reshape(1, 1, -1).expand(BS, -1, -1)
+        # edge_score = torch.cat((padedge_feature, edge_score.transpose(1, 2)), dim=-1).expand(-1, SL, -1)
+        #
+        # ''' node weight '''
+        # if compressed_version == True:
+        #     path = path * (path <= SL)
+        # x = torch.gather(edge_score, 2, path)
+        # node_weight = torch.prod(x, dim=-1, keepdim=True)
+        # text_mask = (text != 0).unsqueeze(-1)
+        # node_weight = torch.where(text_mask != 0, node_weight, torch.zeros_like(node_weight))
+        # aspect_mask = aspect_mask.unsqueeze(-1)
+        # node_weight = torch.where(aspect_mask == 0, node_weight, torch.zeros_like(node_weight))
+        #
+        # # softmax = torch.nn.Softmax(dim=1)
+        # # node_weight = softmax(torch.where(node_weight!=0, node_weight, torch.ones_like(node_weight)*-100000000000))
+        # # node_weight = torch.where(aspect_mask==0, node_weight, torch.zeros_like(node_weight))
+        # # node_weight = node_weight.squeeze(-1)
+        #
         # node_weight = node_weight.squeeze(-1)
-
-        node_weight = node_weight.squeeze(-1)
-        # print(node_weight.shape)
-        # print(torch.sum(node_weight, dim=1).expand(node_weight.shape[1], -1).T.shape)
-        node_weight = torch.div(node_weight, torch.sum(node_weight, dim=1).expand(node_weight.shape[1], -1).T)
-        # print(node_weight.shape)
-
-        weight_norm = torch.sum(node_weight, dim=-1)
-        ''' sentence representation '''
-        sentence_feature = torch.sum(node_weight.unsqueeze(-1) * node_feature, dim=1)
-
-        t = torch.sigmoid(self.linear(v))
-        t = 1
-        sentence_feature = (1 - t) * sentence_feature + t * v
+        # # print(node_weight.shape)
+        # # print(torch.sum(node_weight, dim=1).expand(node_weight.shape[1], -1).T.shape)
+        # node_weight = torch.div(node_weight, torch.sum(node_weight, dim=1).expand(node_weight.shape[1], -1).T)
+        # # print(node_weight.shape)
+        #
+        # weight_norm = torch.sum(node_weight, dim=-1)
+        # ''' sentence representation '''
+        # sentence_feature = torch.sum(node_weight.unsqueeze(-1) * node_feature, dim=1)
+        #
+        # t = torch.sigmoid(self.linear(v))
+        # t = 1
+        # sentence_feature = (1 - t) * sentence_feature + t * v
 
         predicts = self.fc_out(self.fc_dropout(v))
         return [predicts, weight_norm]
