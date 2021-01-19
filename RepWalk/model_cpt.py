@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from RepWalk.rnn import DynamicLSTM
+from rnn import DynamicLSTM
 
 
 class WordEmbedLayer(nn.Module):
