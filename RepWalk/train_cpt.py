@@ -137,6 +137,8 @@ def main():
     # criterion = CrossEntropy(beta=args.beta, eps=args.eps)
     criterion = torch.nn.CrossEntropyLoss()
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
+    print(model)
+    print(optimizer)
     
     train_dataloader = DataLoader(dataset=trainset, batch_size=args.batch_size, shuffle=True)
     test_dataloader = DataLoader(dataset=testset, batch_size=args.batch_size, shuffle=False)
