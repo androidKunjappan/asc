@@ -90,7 +90,7 @@ def run_train(dataloader, model, criterion, optimizer, device, compress):
         outputs = model(inputs, compress)
 
         optimizer.zero_grad()
-        loss = criterion(outputs, labels)
+        loss = criterion(outputs[0], labels)
         loss.backward()
         optimizer.step()
 
