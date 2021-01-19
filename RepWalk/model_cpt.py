@@ -106,7 +106,8 @@ class RepWalk(nn.Module):
         masks = (words_ids != 0).float()
         target_masks = (aspect_ids != 0).float()
         word_feature1 = self.word_embedding(words_ids)
-        v = self.cpt(word_feature1, text_len, aspect_feature, aspect_lens, masks, target_masks, position_weight)
+        sent_len = torch.sum(words_ids != 0, dim=-1)
+        v = self.cpt(word_feature1, sent_len, aspect_feature, aspect_lens, masks, target_masks, position_weight)
 
         '''add a padding word.. somehow this improves performance'''
         # padword_feature = self.pad_word.reshape(1, 1, -1).expand(BS, -1, -1)
