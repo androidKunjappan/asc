@@ -131,6 +131,7 @@ def main():
     _params = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = torch.optim.Adam(_params, lr=args.lr, weight_decay=args.wt_decay)
     criterion = CrossEntropy(beta=args.beta, eps=args.eps)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
     
     train_dataloader = DataLoader(dataset=trainset, batch_size=args.batch_size, shuffle=True)
     test_dataloader = DataLoader(dataset=testset, batch_size=args.batch_size, shuffle=False)
@@ -151,6 +152,8 @@ def main():
             best_test_acc = test_acc
             best_test_f1 = test_f1
             best_epoch = epoch
+        else:
+            scheduler.step()
         print(f"{100*(epoch+1)/args.num_epoch:6.2f}% > loss: {train_loss:.4f}, acc: {train_acc:.4f}, test acc: {test_acc:.4f}, test f1: {test_f1:.4f}")
         print('', flush=True)
         if epoch > best_epoch + 20:
