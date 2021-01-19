@@ -158,7 +158,6 @@ class MyDataset(Dataset):
                 ''' padding sequence '''
                 text = tokenizer.to_sequence(text_pi, 'word')
                 aspect_ids = tokenizer.to_sequence(text_aspect, 'word', maxlen='aspects')
-                print(text_aspect, aspect_ids)
 
                 max_t = 40.0
                 distance = []
@@ -246,6 +245,7 @@ def build_embedding_matrix(vocab, dataset, word_dim=300, dir_path='..ss'):
         print(f"loading embedding matrix: {data_file}")
         embedding_matrix = pickle.load(open(data_file, 'rb'))
     else:
+        n = 0
         print('loading word vectors...')
         embedding_matrix = np.random.uniform(-0.25, 0.25, (len(vocab), word_dim)).astype(
             'float32')  # sample from U(-0.25,0.25)
@@ -254,5 +254,7 @@ def build_embedding_matrix(vocab, dataset, word_dim=300, dir_path='..ss'):
             vec = word_vec.get(vocab.id_to_word(i))
             if vec is not None:
                 embedding_matrix[i] = vec
+                n += 1
+        print('got ', n, 'embeddings')
         pickle.dump(embedding_matrix, open(data_file, 'wb'))
     return embedding_matrix
