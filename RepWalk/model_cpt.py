@@ -189,7 +189,7 @@ class CPT(nn.Module):
         self.dropout = nn.Dropout(.3)
         self.linear1 = nn.ModuleList()
         self.linear2 = nn.ModuleList()
-        for i in range(3):
+        for i in range(2):
             self.linear1.append(nn.Linear(4 * args.hidden_dim, 2 * args.hidden_dim))
             self.linear2.append(nn.Linear(2 * args.hidden_dim, 1))
 
@@ -209,7 +209,7 @@ class CPT(nn.Module):
 
         v = self.dropout(v)
         e = self.dropout(e)
-        for i in range(3):
+        for i in range(2):
             a = torch.bmm(v, e.transpose(1, 2))
             a = a.masked_fill(torch.bmm(masks.unsqueeze(2), target_masks.unsqueeze(1)).eq(0), -1e9)
             a = F.softmax(a, 2)
@@ -219,7 +219,7 @@ class CPT(nn.Module):
             aspect_mid = self.dropout(aspect_mid)
             t = torch.sigmoid(self.linear2[i](v))
             v = (1 - t) * aspect_mid + t * v
-            v = position_weight.unsqueeze(2) * v
+            # v = position_weight.unsqueeze(2) * v
 
         target_masks = target_masks.eq(0).unsqueeze(2).repeat(1, 1, e.shape[2])
         # z, (_, _) = self.lstm3(v, feature_lens)
