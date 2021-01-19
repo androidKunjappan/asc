@@ -6,4 +6,4 @@
 #SBATCH --gres=gpu:1
 #SBATCH --partition=cl1_48h-1G
 
-python3 train_cpt.py
+python3 train_cpt.py --hidden_dim 50 --wt_decay 1e-4
