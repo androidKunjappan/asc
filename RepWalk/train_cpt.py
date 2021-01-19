@@ -123,6 +123,10 @@ def run_test(dataloader, model, criterion, device, compress):
 def main():
     args = retrieve_args()
     args.tokenizer = build_tokenizer(fnames=args.dataset_file.values(), dataset=args.dataset) # transfrom tokens to indices
+    print(args.tokenizer.max_slen)
+    print(args.tokenizer.max_tlen)
+    print(args.tokenizer.max_plen)
+
     embedding_matrix = build_embedding_matrix(vocab=args.tokenizer.vocab['word'], dataset=args.dataset, dir_path = '../..') # pre-trained glove embeddings
     trainset = MyDataset(fname=args.dataset_file['train'], tokenizer=args.tokenizer) #TODO
     testset = MyDataset(fname=args.dataset_file['test'], tokenizer=args.tokenizer) #TODO
@@ -156,7 +160,7 @@ def main():
             scheduler.step()
         print(f"{100*(epoch+1)/args.num_epoch:6.2f}% > loss: {train_loss:.4f}, acc: {train_acc:.4f}, test acc: {test_acc:.4f}, test f1: {test_f1:.4f}")
         print('', flush=True)
-        if epoch > best_epoch + 20:
+        if epoch > best_epoch + 10:
             break
 
     print('#' * 50)
