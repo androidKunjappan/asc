@@ -83,7 +83,7 @@ class RepWalk(nn.Module):
         #                           bidirectional=True, rnn_type='GRU')  # bi-gru layer
         self.word_embedding = nn.Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1], padding_idx=0)
         self.word_embedding.weight.data.copy_(torch.from_numpy(embedding_matrix).float())
-        self.word_embedding.weight.requires_grad = False
+        self.word_embedding.weight.requires_grad = True
         self.cpt = CPT(args, args.word_dim)
         self.linear = nn.Linear(2 * args.hidden_dim, 1)
 
