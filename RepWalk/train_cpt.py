@@ -156,12 +156,13 @@ def main():
     for epoch in range(args.num_epoch):
         train_loss, train_acc = run_train(train_dataloader, model, criterion, optimizer, args.device, compress)
         test_loss, test_acc, test_f1 = run_test(test_dataloader, model, criterion, args.device, compress)
+        _, train_acc, _ = run_test(train_dataloader, model, criterion, args.device, compress)
         if test_acc > best_test_acc:
             best_test_acc = test_acc
             best_test_f1 = test_f1
             best_epoch = epoch
-        # else:
-        #     scheduler.step()
+        else:
+            scheduler.step()
         print(f"{100*(epoch+1)/args.num_epoch:6.2f}% > loss: {train_loss:.4f}, acc: {train_acc:.4f}, test acc: {test_acc:.4f}, test f1: {test_f1:.4f}")
         print('', flush=True)
         if epoch > best_epoch + 10:
