@@ -92,7 +92,7 @@ class RepWalk(nn.Module):
         ''' dropout layer '''
         # self.embed_dropout = nn.Dropout(args.embed_dropout)
         # self.bilinear_dropout = nn.Dropout(args.bilinear_dropout)
-        # self.fc_dropout = nn.Dropout(args.fc_dropout)
+        self.fc_dropout = nn.Dropout(args.fc_dropout)
 
     def forward(self, inputs, compressed_version):
         text, pos, deprel, aspect_head, aspect_mask, gather_idx, path, words_ids, aspect_ids, position_weight = inputs
@@ -173,7 +173,7 @@ class RepWalk(nn.Module):
         # sentence_feature = (1 - t) * sentence_feature + t * v
         weight_norm = None
         # predicts = self.fc_out(self.fc_dropout(v))
-        predicts = self.fc_out(v)
+        predicts = self.fc_out(self.fc_dropout(v))
         return [predicts, weight_norm]
 
 

@@ -42,7 +42,7 @@ def retrieve_args():
     parser.add_argument('--wt_decay', default=1e-5, type=float)
     parser.add_argument('--embed_dropout', default=0.5, type=float)
     parser.add_argument('--bilinear_dropout', default=0, type=float)
-    parser.add_argument('--fc_dropout', default=0, type=float)
+    parser.add_argument('--fc_dropout', default=0.3, type=float)
     parser.add_argument('--beta', default=0.01, type=float)
     parser.add_argument('--eps', default=0.01, type=float)
     parser.add_argument('--seed', default=0, type=int)
