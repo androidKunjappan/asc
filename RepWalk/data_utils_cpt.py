@@ -158,6 +158,8 @@ class MyDataset(Dataset):
                 ''' padding sequence '''
                 text = tokenizer.to_sequence(text_pi, 'word')
                 aspect_ids = tokenizer.to_sequence(text_aspect, 'word', maxlen='aspects')
+                words = text_left + text_aspect + text_right
+                words_ids = tokenizer.to_sequence(words, 'word')
 
                 max_t = 40.0
                 distance = []
@@ -199,7 +201,7 @@ class MyDataset(Dataset):
                 path = np.asarray(path)
                 polarity = polarity_dict[aspect['polarity']]
                 dataset.append(((text, pos, deprel, aspect_head, aspect_mask, gather_idx, path,
-                                 aspect_ids, position_weight), polarity))  # samples in (x, y) tuples
+                                 words_ids, aspect_ids, position_weight), polarity))  # samples in (x, y) tuples
         return dataset
 
     def __getitem__(self, index):

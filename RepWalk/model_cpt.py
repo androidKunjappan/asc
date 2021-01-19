@@ -92,7 +92,7 @@ class RepWalk(nn.Module):
         self.fc_dropout = nn.Dropout(args.fc_dropout)
 
     def forward(self, inputs, compressed_version):
-        text, pos, deprel, aspect_head, aspect_mask, gather_idx, path, aspect_ids, position_weight = inputs
+        text, pos, deprel, aspect_head, aspect_mask, gather_idx, path, words_ids, aspect_ids, position_weight = inputs
         '''Generate hidden representation for nodes as BiGRU(node_embeddings <+> pos-tag_embeddings)'''
         word_feature = self.embed_dropout(self.word_embedding(text))
         pos_feature = self.embed_dropout(self.pos_embedding(pos))
@@ -104,9 +104,9 @@ class RepWalk(nn.Module):
         node_feature, _ = self.rnn(torch.cat((word_feature, pos_feature), dim=-1), text_len.cpu())
         BS, SL, FD = node_feature.shape
 
-        masks = (text != 0).float()
+        masks = (words_ids != 0).float()
         target_masks = (aspect_ids != 0).float()
-        word_feature1 = self.word_embedding(text)
+        word_feature1 = self.word_embedding(words_ids)
         v = self.cpt(word_feature1, text_len, aspect_feature, aspect_lens, masks, target_masks, position_weight)
 
         '''add a padding word.. somehow this improves performance'''
