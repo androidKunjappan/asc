@@ -133,15 +133,13 @@ def main():
     model = RepWalk(embedding_matrix, args).to(args.device)
 
     _params = filter(lambda p: p.requires_grad, model.parameters())
-    print(model.parameters())
     # optimizer = torch.optim.Adam(_params, lr=args.lr, weight_decay=args.wt_decay)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wt_decay)
     # criterion = CrossEntropy(beta=args.beta, eps=args.eps)
     criterion = torch.nn.CrossEntropyLoss()
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
     print(model)
-    print(optimizer)
-    
+
     train_dataloader = DataLoader(dataset=trainset, batch_size=args.batch_size, shuffle=True)
     test_dataloader = DataLoader(dataset=testset, batch_size=args.batch_size, shuffle=False)
     print('train', len(trainset))
@@ -171,6 +169,7 @@ def main():
 
     print('#' * 50)
     print(f"best test acc: {best_test_acc:.4f}, best test f1: {best_test_f1:.4f}")
+    print('#' * 50)
 
 
 if __name__ == '__main__':
