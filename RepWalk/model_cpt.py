@@ -176,10 +176,10 @@ class CPT(nn.Module):
         super(CPT, self).__init__()
         # self.lstm1 = WordEmbedLayer(args.embed_dim, args.hidden_dim, num_layers=args.num_layers,
         #                            batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
-        lstm_dropout = 0
-        self.lstm1 = WordEmbedLayer(embed_dim, args.hidden_dim, num_layers=1,
+        lstm_dropout = 0.3
+        self.lstm1 = WordEmbedLayer(embed_dim, args.hidden_dim, num_layers=2,
                                     batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
-        self.lstm2 = WordEmbedLayer(embed_dim, args.hidden_dim, num_layers=1,
+        self.lstm2 = WordEmbedLayer(embed_dim, args.hidden_dim, num_layers=2,
                                     batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
         self.dropout = nn.Dropout(.3)
         self.linear1 = nn.ModuleList()
