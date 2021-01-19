@@ -195,13 +195,13 @@ class CPT(nn.Module):
         v, (_, _) = self.lstm1(word_feature, text_len.cpu())
         e, (_, _) = self.lstm2(aspects, aspect_lens.cpu())
 
-        if self.once:
-            self.once = False
-            torch.set_printoptions(profile="full")
-            print(position_weight[:, :])
-            print(masks[:])
-            print(target_masks[:])
-            torch.set_printoptions(profile="default")
+        # if self.once:
+        #     self.once = False
+        #     torch.set_printoptions(profile="full")
+        #     print(position_weight[:, :])
+        #     print(masks[:])
+        #     print(target_masks[:])
+        #     torch.set_printoptions(profile="default")
 
         v = self.dropout(v)
         e = self.dropout(e)
