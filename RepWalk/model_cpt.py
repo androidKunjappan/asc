@@ -163,6 +163,7 @@ class RepWalk(nn.Module):
         sentence_feature = torch.sum(node_weight.unsqueeze(-1) * node_feature, dim=1)
 
         t = torch.sigmoid(self.linear(v))
+        t = 1
         sentence_feature = (1 - t) * sentence_feature + t * v
 
         predicts = self.fc_out(self.fc_dropout(sentence_feature))
