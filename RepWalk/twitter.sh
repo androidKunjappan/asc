@@ -6,14 +6,4 @@
 #SBATCH --gres=gpu:1
 #SBATCH --partition=cl1_48h-1G
 
-python3 train_cpt.py --hidden_dim 50 --dataset twitter --lr .001 --batch_size 64 --wt_decay 1e-2
 python3 train_cpt.py --hidden_dim 50 --dataset twitter --lr .001 --batch_size 64 --wt_decay 1e-3
-python3 train_cpt.py --hidden_dim 50 --dataset twitter --lr .001 --batch_size 64 --wt_decay 1e-4
-python3 train_cpt.py --hidden_dim 50 --dataset twitter --lr .001 --batch_size 64 --wt_decay 1e-5
-python3 train_cpt.py --hidden_dim 50 --dataset twitter --lr .001 --batch_size 64 --wt_decay 1e-6
-
-python3 train_cpt.py --hidden_dim 100 --dataset twitter --lr .001 --batch_size 64 --wt_decay 1e-2
-python3 train_cpt.py --hidden_dim 100 --dataset twitter --lr .001 --batch_size 64 --wt_decay 1e-3
-python3 train_cpt.py --hidden_dim 100 --dataset twitter --lr .001 --batch_size 64 --wt_decay 1e-4
-python3 train_cpt.py --hidden_dim 100 --dataset twitter --lr .001 --batch_size 64 --wt_decay 1e-5
-python3 train_cpt.py --hidden_dim 100 --dataset twitter --lr .001 --batch_size 64 --wt_decay 1e-6

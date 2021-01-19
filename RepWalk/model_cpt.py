@@ -209,7 +209,7 @@ class CPT(nn.Module):
 
         v = self.dropout(v)
         e = self.dropout(e)
-        for i in range(2):
+        for i in range(1):
             a = torch.bmm(v, e.transpose(1, 2))
             a = a.masked_fill(torch.bmm(masks.unsqueeze(2), target_masks.unsqueeze(1)).eq(0), -1e9)
             a = F.softmax(a, 2)
