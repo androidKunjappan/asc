@@ -81,7 +81,7 @@ class RepWalk(nn.Module):
         self.bilinear_dropout = nn.Dropout(args.bilinear_dropout)
         self.fc_dropout = nn.Dropout(args.fc_dropout)
 
-    def forward(self, inputs, compressed_version):
+    def forward(self, inputs, compressed_version, att_neg_mask=None):
         text, pos, deprel, aspect_head, aspect_mask, gather_idx, path = inputs
         '''Generate hidden representation for nodes as BiGRU(node_embeddings <+> pos-tag_embeddings)'''
         word_feature = self.embed_dropout(self.word_embedding(text))
@@ -145,13 +145,18 @@ class RepWalk(nn.Module):
         #node_weight = node_weight.squeeze(-1)
 
         node_weight = node_weight.squeeze(-1)
+        if att_neg_mask!=None:
+            #print("not nun")
+            node_weight = torch.where(att_neg_mask==0, node_weight, torch.zeros_like(node_weight))
+            #if torch.sum(att_neg_mask) != 0:
+            #    print("Some mask is being applied")
         #print(node_weight.shape)
         #print(torch.sum(node_weight, dim=1).expand(node_weight.shape[1], -1).T.shape)
         node_weight = torch.div(node_weight, torch.sum(node_weight, dim=1).expand(node_weight.shape[1], -1).T)
         #print(node_weight.shape)
 
-        weight_norm = torch.sum(node_weight, dim=-1)
+        #weight_norm = torch.sum(node_weight, dim=-1)
         ''' sentence representation '''
         sentence_feature = torch.sum(node_weight.unsqueeze(-1) * node_feature, dim=1)
         predicts = self.fc_out(self.fc_dropout(sentence_feature))
-        return [predicts, weight_norm]
+        return [predicts, node_weight]
