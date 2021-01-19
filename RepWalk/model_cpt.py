@@ -198,7 +198,7 @@ class CPT(nn.Module):
             self.onec = False
             print(position_weight[:, :])
             print(text_len[:])
-            print(aspect_lens[:])
+            print(aspect[:])
 
         v = self.dropout(v)
         e = self.dropout(e)
