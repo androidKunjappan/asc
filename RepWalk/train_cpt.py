@@ -142,7 +142,8 @@ def main():
     
     train_dataloader = DataLoader(dataset=trainset, batch_size=args.batch_size, shuffle=True)
     test_dataloader = DataLoader(dataset=testset, batch_size=args.batch_size, shuffle=False)
-    
+    print('train', len(train_dataloader))
+    print('test', len(test_dataloader))
     # weight_init(model)
     best_test_acc, best_test_f1 = 0, 0
     best_epoch = 0
