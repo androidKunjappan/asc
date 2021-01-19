@@ -84,12 +84,10 @@ class RepWalk(nn.Module):
         self.word_embedding = nn.Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1], padding_idx=0)
         self.word_embedding.weight.data.copy_(torch.from_numpy(embedding_matrix).float())
         self.word_embedding.weight.requires_grad = False
-        torch.set_printoptions(profile="full")
-        print(self.word_embedding(0))
-        print(self.word_embedding(5))
-        print(self.word_embedding(10))
-        print(self.word_embedding(20))
-        torch.set_printoptions(profile="default")
+        print(embedding_matrix[0, :])
+        print(embedding_matrix[5, :])
+        print(embedding_matrix[10, :])
+        print(embedding_matrix[20, :])
         self.cpt = CPT(args, args.word_dim)
         self.linear = nn.Linear(2 * args.hidden_dim, 1)
 
