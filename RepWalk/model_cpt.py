@@ -85,10 +85,10 @@ class RepWalk(nn.Module):
         # self.word_embedding.weight.data.copy_(torch.from_numpy(embedding_matrix).float())
         # self.word_embedding.weight.requires_grad = False
         self.cpt = CPT(args, args.word_dim)
-        self.linear = nn.Linear(2 * args.hidden_dim, 1)
+        self.linear = nn.Linear(4 * args.hidden_dim, 1)
 
         self.bilinear = nn.Bilinear(args.hidden_dim * 4, args.dep_dim, 1)
-        self.fc_out = nn.Linear(args.hidden_dim * 2 * 2, 3)
+        self.fc_out = nn.Linear(args.hidden_dim * 2, 3)
         ''' dropout layer '''
         self.embed_dropout = nn.Dropout(args.embed_dropout)
         self.bilinear_dropout = nn.Dropout(args.bilinear_dropout)
@@ -106,11 +106,15 @@ class RepWalk(nn.Module):
 
         aspect_feature = self.word_embedding(aspect_ids)
         aspect_lens = torch.sum(aspect_ids != 0, dim=-1)
-        masks = (words_ids != 0).float()
         target_masks = (aspect_ids != 0).float()
-        word_feature1 = self.word_embedding(words_ids)
-        sent_lens = torch.sum(words_ids != 0, dim=-1)
-        v = self.cpt(word_feature1, sent_lens, aspect_feature, aspect_lens, masks, target_masks, position_weight)
+        # word_feature1 = self.word_embedding(words_ids)
+        # sent_lens = torch.sum(words_ids != 0, dim=-1)
+        # masks = (words_ids != 0).float()
+        sent_lens = torch.sum(text != 0, dim=-1)
+        masks = (text != 0).float()
+        v = self.cpt(node_feature, sent_lens, aspect_feature, aspect_lens, masks, target_masks, position_weight)
+        t = torch.sigmoid(self.linear(torch.cat((v, node_feature), dim=-1)))
+        node_feature = (1 - t) * node_feature + t * v
 
         '''add a padding word.. somehow this improves performance'''
         padword_feature = self.pad_word.reshape(1, 1, -1).expand(BS, -1, -1)
@@ -171,7 +175,7 @@ class RepWalk(nn.Module):
         # t = torch.sigmoid(self.linear(v))
         # t = 1
         # sentence_feature = (1 - t) * sentence_feature + t * v
-        sentence_feature = torch.cat((sentence_feature, v), dim=-1)
+        # sentence_feature = torch.cat((sentence_feature, v), dim=-1)
         # weight_norm = None
         # predicts = self.fc_out(self.fc_dropout(v))
         predicts = self.fc_out(self.fc_dropout(sentence_feature))
@@ -196,8 +200,8 @@ class CPT(nn.Module):
 
         self.once = True
 
-    def forward(self, word_feature, text_len, aspects, aspect_lens, masks, target_masks, position_weight):
-        v, (_, _) = self.lstm1(word_feature, text_len.cpu())
+    def forward(self, v, text_len, aspects, aspect_lens, masks, target_masks, position_weight):
+        # v, (_, _) = self.lstm1(word_feature, text_len.cpu())
         e, (_, _) = self.lstm2(aspects, aspect_lens.cpu())
 
         # if self.once:
@@ -222,16 +226,17 @@ class CPT(nn.Module):
             v = (1 - t) * aspect_mid + t * v
             v = position_weight.unsqueeze(2) * v
 
-        target_masks = target_masks.eq(0).unsqueeze(2).repeat(1, 1, e.shape[2])
-        # z, (_, _) = self.lstm3(v, feature_lens)
-
-        query = torch.max(e.masked_fill(target_masks, -1e9), dim=1)[0].unsqueeze(1)
-        # hidden_fwd, hidden_bwd = e.chunk(2, 1)
-        # query = torch.cat((hidden_fwd[:, -1, :], hidden_bwd[:, 0, :]), dim=2).unsqueeze(1)
-
-        alpha = torch.bmm(v, query.transpose(1, 2))
-        alpha = alpha.masked_fill(masks.eq(0).unsqueeze(2), -1e9)
-        alpha = F.softmax(alpha, 1)
-        z = torch.bmm(alpha.transpose(1, 2), v)
-
-        return z.squeeze(1)
+        # target_masks = target_masks.eq(0).unsqueeze(2).repeat(1, 1, e.shape[2])
+        # # z, (_, _) = self.lstm3(v, feature_lens)
+        #
+        # query = torch.max(e.masked_fill(target_masks, -1e9), dim=1)[0].unsqueeze(1)
+        # # hidden_fwd, hidden_bwd = e.chunk(2, 1)
+        # # query = torch.cat((hidden_fwd[:, -1, :], hidden_bwd[:, 0, :]), dim=2).unsqueeze(1)
+        #
+        # alpha = torch.bmm(v, query.transpose(1, 2))
+        # alpha = alpha.masked_fill(masks.eq(0).unsqueeze(2), -1e9)
+        # alpha = F.softmax(alpha, 1)
+        # z = torch.bmm(alpha.transpose(1, 2), v)
+        #
+        # return z.squeeze(1)
+        return v
