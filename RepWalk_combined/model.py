@@ -187,7 +187,7 @@ class RepWalk(nn.Module):
         sentence_feature = torch.sum(node_weight.unsqueeze(-1) * node_feature, dim=1)
         predicts = self.fc_out(self.fc_dropout(sentence_feature))
         if self.cpt:
-            predicts = predicts + self.classifier(v)
+            predicts = predicts + self.eps * self.classifier(v)
         return [predicts, node_weight]
 
 
