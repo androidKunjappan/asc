@@ -88,7 +88,7 @@ class RepWalk(nn.Module):
         self.linear = nn.Linear(2 * args.hidden_dim, 1)
 
         self.bilinear = nn.Bilinear(args.hidden_dim * 4, args.dep_dim, 1)
-        self.fc_out = nn.Linear(args.hidden_dim * 2, 3)
+        self.fc_out = nn.Linear(args.hidden_dim * 2 * 2, 3)
         ''' dropout layer '''
         self.embed_dropout = nn.Dropout(args.embed_dropout)
         self.bilinear_dropout = nn.Dropout(args.bilinear_dropout)
@@ -168,9 +168,10 @@ class RepWalk(nn.Module):
         ''' sentence representation '''
         sentence_feature = torch.sum(node_weight.unsqueeze(-1) * node_feature, dim=1)
 
-        t = torch.sigmoid(self.linear(v))
+        # t = torch.sigmoid(self.linear(v))
         # t = 1
-        sentence_feature = (1 - t) * sentence_feature + t * v
+        # sentence_feature = (1 - t) * sentence_feature + t * v
+        sentence_feature = torch.cat((sentence_feature, v), dim=-1)
         # weight_norm = None
         # predicts = self.fc_out(self.fc_dropout(v))
         predicts = self.fc_out(self.fc_dropout(sentence_feature))
