@@ -103,13 +103,13 @@ class RepWalk(nn.Module):
         BS, SL, FD = node_feature.shape
 
         if self.cpt:
-            aspect_feature = self.embed_dropout(self.word_embedding(aspect_ids))
+            aspect_feature = self.word_embedding(aspect_ids)
             aspect_lens = torch.sum(aspect_ids != 0, dim=-1)
             target_masks = (aspect_ids != 0).float()
-            # word_feature1 = self.word_embedding(words_ids)
+            word_feature1 = self.word_embedding(text)
             # sent_lens = torch.sum(words_ids != 0, dim=-1)
             # masks = (words_ids != 0).float()
-            word_feature1 = node_feature
+            # word_feature1 = node_feature
             sent_lens = torch.sum(text != 0, dim=-1)
             masks = (text != 0).float()
             v = self.cpt(word_feature1, sent_lens, aspect_feature, aspect_lens, masks, target_masks, position_weight)
@@ -203,7 +203,7 @@ class CPT(nn.Module):
         self.once = True
 
     def forward(self, v, text_len, aspects, aspect_lens, masks, target_masks, position_weight):
-        # v, (_, _) = self.lstm1(v, text_len.cpu())
+        v, (_, _) = self.lstm1(v, text_len.cpu())
         e, (_, _) = self.lstm2(aspects, aspect_lens.cpu())
 
         # if self.once:
