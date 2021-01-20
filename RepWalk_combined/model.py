@@ -192,7 +192,7 @@ class CPT(nn.Module):
                                     batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
         self.lstm2 = WordEmbedLayer(embed_dim, args.hidden_dim, num_layers=1,
                                     batch_first=True, bidirectional=True, dropout=lstm_dropout, rnn_type=args.rnn_type)
-        self.dropout = nn.Dropout(.3)
+        self.dropout = nn.Dropout(.5)
         self.linear1 = nn.ModuleList()
         self.linear2 = nn.ModuleList()
         for i in range(2):
