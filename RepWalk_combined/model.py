@@ -240,4 +240,4 @@ class CPT(nn.Module):
         # z = torch.bmm(alpha.transpose(1, 2), v)
         #
         # return z.squeeze(1)
-        return v
+        return self.dropout(v)
