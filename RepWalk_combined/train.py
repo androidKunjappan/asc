@@ -129,7 +129,7 @@ def run_train_final(dataloader, model, criterion, optimizer, device, compress, a
         i += batch_size
         inputs = list(map(lambda x: x.to(device), sample_batched[0]))
         labels = sample_batched[1].to(device)
-        outputs = model(inputs, compress, attention_neg_mask)
+        outputs = model(inputs, compress)
         att_weights.append(outputs[1])
         #print(outputs[1].shape)
         #print(torch.sum(outputs[1]!=0, dim=1))
@@ -258,7 +258,7 @@ def main():
         best_correctness = None
 
         for epoch in range(args.num_epoch):
-            train_loss, train_acc, att_weights, correctness = run_train(train_dataloader, model, criterion, optimizer, args.device, compress, att_neg_mask_list[-1])
+            train_loss, train_acc, att_weights, correctness = run_train(train_dataloader, model, criterion, optimizer, args.device, compress, att_full_mask_list[-1])
             test_loss, test_acc, test_f1 = run_test(test_dataloader, model, criterion, args.device, compress)
             _, train_acc, _ = run_test(train_dataloader, model, criterion, args.device, compress)
             if test_acc > best_test_acc:
@@ -289,7 +289,7 @@ def main():
     #print(torch.sum(att_full_mask_list[1]))
     #print(torch.sum(att_target_list[1]))
 
-    for outer_iter_final in range(args.iterations+1):
+    for outer_iter_final in range(1, args.iterations+1):
         print('*' * 20)
         print("\n\nStarting final iteration :", outer_iter_final)
         weight_init(model)

@@ -124,7 +124,7 @@ def run_train_final(dataloader, model, criterion, optimizer, device, compress, a
         i += batch_size
         inputs = list(map(lambda x: x.to(device), sample_batched[0]))
         labels = sample_batched[1].to(device)
-        outputs = model(inputs, compress, attention_neg_mask)
+        outputs = model(inputs, compress)
         att_weights.append(outputs[1])
         #print(outputs[1].shape)
         #print(torch.sum(outputs[1]!=0, dim=1))
@@ -133,6 +133,8 @@ def run_train_final(dataloader, model, criterion, optimizer, device, compress, a
         loss1 = criterion(outputs, labels)
         loss2 = phi * F.mse_loss(outputs[1] * attention_full_mask, attention_target)
         #print(loss1.item(), loss2.item())
+        if torch.isnan(loss2):
+            loss2 = 0
         loss = loss1 + loss2
 
         loss.backward()
@@ -217,7 +219,7 @@ def main():
     optimizer = torch.optim.Adam(_params, lr=args.lr, weight_decay=args.wt_decay)
     criterion = CrossEntropy(beta=args.beta, eps=args.eps)
     
-    train_dataloader = DataLoader(dataset=trainset, batch_size=args.batch_size, shuffle=True)
+    train_dataloader = DataLoader(dataset=trainset, batch_size=args.batch_size, shuffle=False)
     test_dataloader = DataLoader(dataset=testset, batch_size=args.batch_size, shuffle=False)
     
     if args.compress == 'T':
@@ -253,7 +255,7 @@ def main():
         best_correctness = None
 
         for epoch in range(args.num_epoch):
-            train_loss, train_acc, att_weights, correctness = run_train(train_dataloader, model, criterion, optimizer, args.device, compress, att_neg_mask_list[-1])
+            train_loss, train_acc, att_weights, correctness = run_train(train_dataloader, model, criterion, optimizer, args.device, compress, att_full_mask_list[-1])
             test_loss, test_acc, test_f1 = run_test(test_dataloader, model, criterion, args.device, compress)
             if test_acc > best_test_acc:
                 best_test_acc = test_acc
@@ -281,7 +283,7 @@ def main():
     #print(torch.sum(att_full_mask_list[1]))
     #print(torch.sum(att_target_list[1]))
 
-    for outer_iter_final in range(args.iterations+1):
+    for outer_iter_final in range(1, args.iterations+1):
         print('*' * 20)
         print("\n\nStarting final iteration :", outer_iter_final)
         weight_init(model)

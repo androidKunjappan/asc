@@ -146,16 +146,11 @@ class RepWalk(nn.Module):
 
         node_weight = node_weight.squeeze(-1)
         if att_neg_mask!=None:
-            #print("not nun")
             node_weight = torch.where(att_neg_mask==0, node_weight, torch.zeros_like(node_weight))
-            #if torch.sum(att_neg_mask) != 0:
-            #    print("Some mask is being applied")
-        #print(node_weight.shape)
-        #print(torch.sum(node_weight, dim=1).expand(node_weight.shape[1], -1).T.shape)
-        node_weight = torch.div(node_weight, torch.sum(node_weight, dim=1).expand(node_weight.shape[1], -1).T)
-        #print(node_weight.shape)
+        weight_sum = torch.sum(node_weight, dim=1)
+        denominator = torch.where(weight_sum>0, weight_sum, torch.ones_like(weight_sum))
+        node_weight = torch.div(node_weight, denominator.expand(node_weight.shape[1], -1).T)
 
-        #weight_norm = torch.sum(node_weight, dim=-1)
         ''' sentence representation '''
         sentence_feature = torch.sum(node_weight.unsqueeze(-1) * node_feature, dim=1)
         predicts = self.fc_out(self.fc_dropout(sentence_feature))
