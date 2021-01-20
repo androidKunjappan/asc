@@ -92,6 +92,7 @@ class RepWalk(nn.Module):
             self.cpt = True
             self.cpt = CPT(args, args.word_dim)
             self.linear = nn.Linear(4 * args.hidden_dim, 1)
+            self.linear2 = nn.Linear(4 * args.hidden_dim, 2 * args.hidden_dim)
 
     def forward(self, inputs, compressed_version, att_neg_mask=None):
         text, pos, deprel, aspect_head, aspect_mask, gather_idx, path, words_ids, aspect_ids, position_weight = inputs
@@ -113,9 +114,9 @@ class RepWalk(nn.Module):
             sent_lens = torch.sum(text != 0, dim=-1)
             masks = (text != 0).float()
             v = self.cpt(word_feature1, sent_lens, aspect_feature, aspect_lens, masks, target_masks, position_weight)
-            t = torch.sigmoid(self.linear(torch.cat((v, node_feature), dim=-1)))
+            # t = torch.sigmoid(self.linear(torch.cat((v, node_feature), dim=-1)))
             # node_feature = (1 - t) * node_feature + t * v
-            node_feature = v
+            node_feature = self.linear2(torch.cat((v, node_feature), dim=-1))
 
         '''add a padding word.. somehow this improves performance'''
         padword_feature = self.pad_word.reshape(1, 1, -1).expand(BS, -1, -1)
