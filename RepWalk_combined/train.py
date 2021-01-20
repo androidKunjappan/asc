@@ -16,20 +16,20 @@ import torch.nn.functional as F
 def retrieve_args():
     dataset_files = {
         'restaurant': {
-            'train': os.path.join('datasets', 'Restaurants_Train.json'),
-            'test': os.path.join('datasets', 'Restaurants_Test.json')
+            'train': os.path.join('../RepWalk/datasets', 'Restaurants_Train.json'),
+            'test': os.path.join('../RepWalk/datasets', 'Restaurants_Test.json')
         },
         'laptop': {
-            'train': os.path.join('datasets', 'Laptops_Train.json'),
-            'test': os.path.join('datasets', 'Laptops_Test.json')
+            'train': os.path.join('../RepWalk/datasets', 'Laptops_Train.json'),
+            'test': os.path.join('../RepWalk/datasets', 'Laptops_Test.json')
         },
         'twitter': {
-            'train': os.path.join('datasets', 'Tweets_Train.json'),
-            'test': os.path.join('datasets', 'Tweets_Test.json')
+            'train': os.path.join('../RepWalk/datasets', 'Tweets_Train.json'),
+            'test': os.path.join('../RepWalk/datasets', 'Tweets_Test.json')
         },
         'restaurant16': {
-            'train': os.path.join('datasets', 'Restaurants16_Train.json'),
-            'test': os.path.join('datasets', 'Restaurants16_Test.json')
+            'train': os.path.join('../RepWalk/datasets', 'Restaurants16_Train.json'),
+            'test': os.path.join('../RepWalk/datasets', 'Restaurants16_Test.json')
         }
     }
     parser = argparse.ArgumentParser()
@@ -53,6 +53,10 @@ def retrieve_args():
     parser.add_argument('--seed', default=0, type=int)
     parser.add_argument('--device', default=None, type=str, help='cpu, cuda')
     parser.add_argument('--compress', default='F', type=str, help='T, F')
+
+    parser.add_argument('--cpt', action="store_true", help='run with cpt')
+    parser.add_argument("--rnn_type", type=str, default="LSTM", help="lstm or gru")
+    parser.add_argument('--early_stop', type=int, default=5, help='early stop')
     args = parser.parse_args()
     args.dataset_file = dataset_files[args.dataset]
     args.device = torch.device(args.device) if args.device else torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -68,8 +72,8 @@ def retrieve_args():
 def weight_init(model):
     for name, param in model.named_parameters():
             if param.requires_grad:
-                if 'embedding' in name: 
-                    weight = torch.nn.init.xavier_uniform_(torch.zeros_like(param)) 
+                if 'embedding' in name:
+                    weight = torch.nn.init.xavier_uniform_(torch.zeros_like(param))
                     weight[0] = torch.tensor(0, dtype=param.dtype, device=param.device)
                     setattr(param, 'data', weight)
                 else:
@@ -145,7 +149,7 @@ def run_train_final(dataloader, model, criterion, optimizer, device, compress, a
         correctness.append(torch.argmax(outputs[0], -1) == labels)
     return train_loss / n_train, n_correct / n_train, torch.cat(att_weights), torch.cat(correctness)
 
-    
+
 def run_test(dataloader, model, criterion, device, compress):
     test_loss, n_correct, n_test = 0, 0, 0
     labels_all, predicts_all = None, None
@@ -156,7 +160,7 @@ def run_test(dataloader, model, criterion, device, compress):
             labels = sample_batched[1].to(device)
             outputs = model(inputs, compress)
             loss = criterion(outputs, labels)
-            
+
             test_loss += loss.item() * len(labels)
             n_correct += (torch.argmax(outputs[0], -1) == labels).sum().item()
             n_test += len(labels)
@@ -202,7 +206,7 @@ def main():
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     args.tokenizer = build_tokenizer(fnames=args.dataset_file.values(), dataset=args.dataset) # transfrom tokens to indices
-    embedding_matrix = build_embedding_matrix(vocab=args.tokenizer.vocab['word'], dataset=args.dataset, dir_path = '/scratch/vishalpeter/NLP_Project') # pre-trained glove embeddings
+    embedding_matrix = build_embedding_matrix(vocab=args.tokenizer.vocab['word'], dataset=args.dataset, dir_path='../../') # pre-trained glove embeddings
     trainset = MyDataset(fname=args.dataset_file['train'], tokenizer=args.tokenizer) #TODO
     testset = MyDataset(fname=args.dataset_file['test'], tokenizer=args.tokenizer) #TODO
     model = RepWalk(embedding_matrix, args).to(args.device)
@@ -216,10 +220,10 @@ def main():
     _params = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = torch.optim.Adam(_params, lr=args.lr, weight_decay=args.wt_decay)
     criterion = CrossEntropy(beta=args.beta, eps=args.eps)
-    
-    train_dataloader = DataLoader(dataset=trainset, batch_size=args.batch_size, shuffle=True)
+
+    train_dataloader = DataLoader(dataset=trainset, batch_size=args.batch_size, shuffle=False)
     test_dataloader = DataLoader(dataset=testset, batch_size=args.batch_size, shuffle=False)
-    
+
     if args.compress == 'T':
         compress = True
         print("Starting to train compressed model")
