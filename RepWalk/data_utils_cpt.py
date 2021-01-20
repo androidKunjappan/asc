@@ -171,7 +171,7 @@ class MyDataset(Dataset):
                     else:
                         distance.append(pos - start)
 
-                pad = tokenizer.max_slen - len(text_pi)
+                pad = tokenizer.max_slen - len(words)
                 distance = distance + pad * [-1]
                 position_weight = []
                 for d in distance:
