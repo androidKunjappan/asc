@@ -66,6 +66,7 @@ def retrieve_args():
     torch.cuda.manual_seed_all(args.seed)
     # ~ torch.backends.cudnn.deterministic = True #TODO:
     # ~ torch.backends.cudnn.benchmark = False    #TODO:
+    print(args, flush=True)
     return args
 
 
@@ -296,11 +297,13 @@ def main():
             train_loss, train_acc, _, _ =  run_train_final(train_dataloader, model, criterion, optimizer, args.device, compress, att_neg_mask_list[outer_iter_final], \
                                                            att_full_mask_list[outer_iter_final], att_target_list[outer_iter_final], args.phi)
             test_loss, test_acc, test_f1 = run_test(test_dataloader, model, criterion, args.device, compress)
+            _, train_acc, _ = run_test(train_dataloader, model, criterion, args.device, compress)
             if test_acc > best_test_acc:
                 best_test_acc = test_acc
                 best_test_f1 = test_f1
                 print("Best accuracy in this iteration..")
             print(f"{100*(epoch+1)/args.num_epoch:6.2f}% > loss: {train_loss:.4f}, acc: {train_acc:.4f}, test acc: {test_acc:.4f}, test f1: {test_f1:.4f}", flush=True)
+            print('', flush=True)
         print(f"best test acc: {best_test_acc:.4f}, best test f1: {best_test_f1:.4f}")
         final_accs.append(best_test_acc)
 
