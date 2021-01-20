@@ -163,8 +163,8 @@ class MyDataset(Dataset):
 
                 max_t = 40.0
                 distance = []
-                for pos in range(len(text_pi)):
-                    if text_pi[pos] == '<p>' or text_pi[pos] == '</p>':
+                for pos in range(len(words)):
+                    if words[pos] == '<p>' or words[pos] == '</p>':
                         distance.append(-1)
                     elif pos < start:
                         distance.append(end - 1 - pos)
