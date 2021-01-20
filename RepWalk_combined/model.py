@@ -103,7 +103,7 @@ class RepWalk(nn.Module):
         BS, SL, FD = node_feature.shape
 
         if self.cpt:
-            aspect_feature = self.word_embedding(aspect_ids)
+            aspect_feature = self.embed_dropout(self.word_embedding(aspect_ids))
             aspect_lens = torch.sum(aspect_ids != 0, dim=-1)
             target_masks = (aspect_ids != 0).float()
             # word_feature1 = self.word_embedding(words_ids)
