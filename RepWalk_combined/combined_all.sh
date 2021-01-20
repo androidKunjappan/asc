@@ -8,4 +8,4 @@
 
 #python3 train.py --cpt --dataset laptop --lr .001 --batch_size 32 --phi 10.0 --entropy 2.5 --eps 0.01 --beta 0.01
 #python3 train.py --cpt --dataset twitter --lr .001 --batch_size 64 --phi 10.0 --entropy 2.0 --eps 0.01 --beta 0.01 --num_epoch 40
-python3 train.py --cpt --dataset twitter --lr .001 --batch_size 32 --phi 10.0 --entropy 2.5 --eps 0.01 --beta 0.01
+python3 train.py --cpt --dataset restaurant --lr .001 --batch_size 32 --phi 10.0 --entropy 2.5 --eps 0.01 --beta 0.01
