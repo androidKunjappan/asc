@@ -117,6 +117,7 @@ class RepWalk(nn.Module):
             # t = torch.sigmoid(self.linear(torch.cat((v, node_feature), dim=-1)))
             # node_feature = (1 - t) * node_feature + t * v
             node_feature = self.linear2(torch.cat((v, node_feature), dim=-1))
+            node_feature = F.dropout(node_feature, .5, self.training)
 
         '''add a padding word.. somehow this improves performance'''
         padword_feature = self.pad_word.reshape(1, 1, -1).expand(BS, -1, -1)
