@@ -40,7 +40,7 @@ def retrieve_args():
     parser.add_argument('--hidden_dim', default=300, type=int)
     parser.add_argument('--batch_size', default=32, type=int)
     parser.add_argument('--num_epoch', default=100, type=int)
-    parser.add_argument('--iterations', default=3, type=int)
+    parser.add_argument('--iterations', default=4, type=int)
     parser.add_argument('--lr', default=1e-3, type=float)
     parser.add_argument('--wt_decay', default=1e-5, type=float)
     parser.add_argument('--embed_dropout', default=0.5, type=float)
@@ -55,6 +55,7 @@ def retrieve_args():
     parser.add_argument('--compress', default='F', type=str, help='T, F')
 
     parser.add_argument('--cpt', action="store_true", help='run with cpt')
+    parser.add_argument('--no_itr', action="store_true", help='run with cpt')
     parser.add_argument("--rnn_type", type=str, default="LSTM", help="lstm or gru")
     parser.add_argument('--early_stop', type=int, default=5, help='early stop')
     args = parser.parse_args()
@@ -246,9 +247,16 @@ def main():
     att_full_mask_list.append(torch.zeros((n_train, f_train), dtype = torch.int32).to(args.device))
     att_target_list.append(torch.zeros((n_train, f_train), dtype = torch.float32).to(args.device))
 
+    num_init_iter = args.iterations
+    num_final_itr = args.iterations
+    if args.no_itr:
+        num_init_iter = 1
+        num_final_itr = 0
+    best_test_acc = 0
+    best_test_f1 = 0
     init_accs = []
     final_accs = []
-    for outer_iter_init in range(args.iterations):
+    for outer_iter_init in range(num_init_iter):
         print('\n')
         print('*' * 20)
         print("\nStarting initial iteration :", outer_iter_init + 1)
@@ -283,13 +291,16 @@ def main():
     print(f"best test acc: {best_test_acc:.4f}, best test f1: {best_test_f1:.4f}")
     print('#' * 50)
 
+    if args.no_itr:
+        return
+
     #print(att_weights_list[0])
     #print(att_weights_list[1])
     #print(torch.sum(att_neg_mask_list[1]))
     #print(torch.sum(att_full_mask_list[1]))
     #print(torch.sum(att_target_list[1]))
 
-    for outer_iter_final in range(1, args.iterations+1):
+    for outer_iter_final in range(1, num_final_itr + 1):
         print('*' * 20)
         print("\n\nStarting final iteration :", outer_iter_final)
         weight_init(model)
@@ -313,6 +324,7 @@ def main():
     print("\n\nFinal Accuracies per iteration")
     print(init_accs)
     print(final_accs)
+    print('best acuuracy', max(final_accs))
     print("dataset:", args.dataset)
     print("Arguments used")
     print("batch_size:", args.batch_size, "lr:", args.lr, "phi:", args.phi, "entropy:", args.entropy, "eps:", args.eps, "beta:", args.beta, flush=True)
