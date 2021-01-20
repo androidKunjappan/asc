@@ -205,7 +205,7 @@ class CPT(nn.Module):
         self.once = True
 
     def forward(self, v, text_len, aspects, aspect_lens, masks, target_masks, position_weight):
-        v, (_, _) = self.lstm1(v, text_len.cpu())
+        # v, (_, _) = self.lstm1(v, text_len.cpu())
         e, (_, _) = self.lstm2(aspects, aspect_lens.cpu())
 
         # if self.once:
