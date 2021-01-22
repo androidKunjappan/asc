@@ -93,7 +93,7 @@ class RepWalk(nn.Module):
             self.cpt = CPT(args, args.word_dim)
             self.linear = nn.Linear(4 * args.hidden_dim, 1)
             self.eps = nn.Parameter(torch.rand(1), requires_grad=True)
-            self.classifier = nn.Linear(args.hidden_dim * 2, 3)
+            self.classifier = nn.Linear(args.hidden_dim * 4, 3)
             # self.linear2 = nn.Linear(4 * args.hidden_dim, 2 * args.hidden_dim)
 
     def forward(self, inputs, compressed_version, att_neg_mask=None):
@@ -185,9 +185,12 @@ class RepWalk(nn.Module):
 
         ''' sentence representation '''
         sentence_feature = torch.sum(node_weight.unsqueeze(-1) * node_feature, dim=1)
-        predicts = self.fc_out(self.fc_dropout(sentence_feature))
+
         if self.cpt:
-            predicts = predicts + self.eps * self.classifier(v)
+            predicts = self.classifier(torch.cat((sentence_feature, v), dim=-1))
+            # predicts = predicts + self.eps * self.classifier(v)
+        else:
+            predicts = self.fc_out(self.fc_dropout(sentence_feature))
         return [predicts, node_weight]
 
 
