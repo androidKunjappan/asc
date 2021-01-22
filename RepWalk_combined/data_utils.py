@@ -161,7 +161,7 @@ class MyDataset(Dataset):
                 words = text_left + text_aspect + text_right
                 words_ids = tokenizer.to_sequence(words, 'word')
 
-                max_t = 30.0
+                max_t = 50.0
                 distance = []
                 for pos in range(len(text_pi)):
                     if text_pi[pos] == '<p>' or text_pi[pos] == '</p>':

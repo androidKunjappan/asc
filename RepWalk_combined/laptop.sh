@@ -6,5 +6,4 @@
 #SBATCH --gres=gpu:1
 #SBATCH --partition=cl2_48h-1G
 
-python3 train.py --cpt --dataset laptop --lr .001 --batch_size 32 --phi 10.0 --entropy 2.5 --eps 0.01 --beta 0.01 --no_itr
-
+python3 train.py --cpt --dataset laptop --lr .001 --batch_size 32 --phi 10.0 --entropy 2.5 --eps 0.01 --beta 0.01
